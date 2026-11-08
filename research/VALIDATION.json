@@ -12,5 +12,12 @@
   "mixed_training_started": false,
   "github_hf_authenticated": true,
   "hf_write_read_preflights_passed": true,
-  "kaggle_blocker": "No Kaggle credentials were available; private credential requests timed out."
+  "kaggle_blocker": "API-created version cannot access HF_TOKEN; enable it in the notebook Secrets UI and Save & Run All.",
+  "kaggle_authenticated": true,
+  "original_resume_submission": {
+    "kernel": "muhammadhassan31/notebook437d566ac5",
+    "version": 10,
+    "status": "ERROR",
+    "stage": "HF_TOKEN secret lookup before setup/training"
+  }
 }

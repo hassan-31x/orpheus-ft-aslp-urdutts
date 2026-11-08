@@ -12,7 +12,7 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["resume", "draft", "smoke", "full"])
-    parser.add_argument("--existing-kernel", help="Resume an existing UrduTTS notebook so its secret binding is retained")
+    parser.add_argument("--existing-kernel", help="Submit the resume to an existing UrduTTS notebook; API versions still require a UI secret grant")
     parser.add_argument("--no-run", action="store_true", help="Publish without executing")
     args = parser.parse_args()
     from kaggle.api.kaggle_api_extended import KaggleApi
