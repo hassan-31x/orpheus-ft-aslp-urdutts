@@ -1,0 +1,834 @@
+{
+  "aslp": [
+    {
+      "id": "d4101e03d44f61a50ff9213e",
+      "category": "interview",
+      "text": "ویسے آپ کے ملنے ملانے والوں میں نہیں تھے۔ ٹھیک ہے۔ تو کیا وہ مطلب میں اس پہ آنا چاہ رہی ہوں کہ ایک یہ کہ شکلاً پسند کیا تو گہرائی نہیں تھی۔ تو کیا ان ملاقاتوں میں کچھ اس لڑکی کے بارے میں آپ کو معلوم پڑا؟",
+      "quality": {
+        "duration_seconds": 15.93,
+        "peak": 0.186767578125,
+        "rms_db": -31.998369216918945,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.599656241807506,
+        "dnsmos_bak": 3.9338737229872653,
+        "dnsmos_ovrl": 3.21674438753954
+      },
+      "rejection": "dnsmos_ovrl",
+      "passes_current_acoustic_gates": true,
+      "source_path": "corpus/US-Std/long/interview/audio/SPEAKER_0030_INTERVIEW_001386.wav"
+    },
+    {
+      "id": "87cc197ba398670d9c541f1b",
+      "category": "interview",
+      "text": "اچھا جو جو لیکٹیشن پہ ہیں، لائک بچوں کو دودھ پلانے والی مائیں آٹھ ہفتے بعد وہ آٹھ بچے پیدا کرنے کے آٹھ ہفتے بعد جو ہے وہ استعمال کرنا شروع کر سکتی ہیں۔ یس۔",
+      "quality": {
+        "duration_seconds": 10.581,
+        "peak": 0.361083984375,
+        "rms_db": -25.77301025390625,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.335046813096195,
+        "dnsmos_bak": 3.0869015626547442,
+        "dnsmos_ovrl": 2.6353970105210487
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/long/interview/audio/SPEAKER_0094_INTERVIEW_005914.wav"
+    },
+    {
+      "id": "9b9964a7e78fe1a1d73afd8e",
+      "category": "interview",
+      "text": "اس میں کچھ کمی ہے۔ کیا کس میں کمی ہے؟ مطلب جہیز میں کچھ کمی ہے۔ اچھا کیونکہ پہنونیاں لوگ دیکھ رہے تھے کہ اس میں پہنونیاں نہیں ہیں وہ سب پوچھ رہے تھے تو انہوں نے ان سے یہ کہہ دیا کہ شاید وہ لوگ بھول گئے ہیں۔",
+      "quality": {
+        "duration_seconds": 13.146,
+        "peak": 0.224945068359375,
+        "rms_db": -32.08316421508789,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.6590006082175206,
+        "dnsmos_bak": 3.794507224656249,
+        "dnsmos_ovrl": 3.193257301667933
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": true,
+      "source_path": "corpus/US-Std/long/interview/audio/SPEAKER_0176_INTERVIEW_010898.wav"
+    },
+    {
+      "id": "e2fb1ce40a4bc36d5182a3cb",
+      "category": "interview",
+      "text": "کیا کریں انسان؟ بھئی تو اب یہ تو وہ تو کہتے ہیں کہ تمہیں احساس پیدا کرنا پڑے گا اپنے آپ میں کہ بھئی اگر ادھر اس طرح کا ہے تو ہے۔ اب میں تو کہتی ہوں رسم ہی نہ کرو۔",
+      "quality": {
+        "duration_seconds": 9.585,
+        "peak": 0.29595947265625,
+        "rms_db": -29.663503646850586,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.54355796083811,
+        "dnsmos_bak": 2.7369933254120764,
+        "dnsmos_ovrl": 2.5761826799052283
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/long/interview/audio/SPEAKER_0174_INTERVIEW_011012.wav"
+    },
+    {
+      "id": "3c5ad81fb90448bd9867785c",
+      "category": "podcast",
+      "text": "یار کیا کہنے ہیں یار",
+      "quality": {
+        "duration_seconds": 2.279,
+        "peak": 0.620452880859375,
+        "rms_db": -19.907501220703125,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.451488665356763,
+        "dnsmos_bak": 2.3989818936584992,
+        "dnsmos_ovrl": 2.337743501777505
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/podcast/audio/SPEAKER_0048_PODCAST_004760.wav"
+    },
+    {
+      "id": "b5e3de5a5c5b8461141abc90",
+      "category": "podcast",
+      "text": "وہ ہوا میں بس پھر اپنی پروڈکشنز میں لگ گیا زلفی نے کنونس کر دیا فیصل کو کہ بھائی تم کوک سٹوڈیو پہ آ جاؤ کر لو کر لو کر لو فیصل کو نہیں کرنا تھا لیکن فیصل نے کر لیا بس پھر",
+      "quality": {
+        "duration_seconds": 13.651,
+        "peak": 0.81005859375,
+        "rms_db": -19.727237701416016,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 0.9718701926598784,
+        "dnsmos_sig": 3.4804927754838317,
+        "dnsmos_bak": 4.049065422671235,
+        "dnsmos_ovrl": 3.2147999055743925
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": true,
+      "source_path": "corpus/US-Std/long/podcast/audio/SPEAKER_0005_PODCAST_000690.wav"
+    },
+    {
+      "id": "0f0a30dfdee99ddcb9989869",
+      "category": "podcast",
+      "text": "سٹار ہیں وہ ظاہر ہے ان کا ایک اورہ ہے سٹار اتنا کام کیا ہوا ہے۔",
+      "quality": {
+        "duration_seconds": 3.493,
+        "peak": 0.702362060546875,
+        "rms_db": -18.880517959594727,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.505490970648265,
+        "dnsmos_bak": 2.387137352265459,
+        "dnsmos_ovrl": 2.316499514385034
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/podcast/audio/SPEAKER_0048_PODCAST_004979.wav"
+    },
+    {
+      "id": "2dc245654aa9b9277cbb5205",
+      "category": "podcast",
+      "text": "کوئی شارجہ میں ہو۔ اچھا مسئلہ",
+      "quality": {
+        "duration_seconds": 1.839,
+        "peak": 0.96881103515625,
+        "rms_db": -13.186301231384277,
+        "clipped_fraction": 0.0
+      },
+      "rejection": "duration",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/podcast/audio/SPEAKER_0025_PODCAST_001408.wav"
+    },
+    {
+      "id": "9a3a83cf536368a6f377c3b4",
+      "category": "drama",
+      "text": "وہ اہ شادی کر دیجیے اسکی، خوش خوش ہے۔",
+      "quality": {
+        "duration_seconds": 2.413,
+        "peak": 0.502899169921875,
+        "rms_db": -17.41359519958496,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.6303735952640794,
+        "dnsmos_bak": 3.4267338851457025,
+        "dnsmos_ovrl": 2.9801334257978893
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/drama/audio/SPEAKER_0064_DRAMA_000520.wav"
+    },
+    {
+      "id": "7fe44eb151db6a43b66c171e",
+      "category": "drama",
+      "text": "سارہ، بچے تو ٹھیک لگ رہے ہیں مجھے لیکن یہ عورت بالکل پاگل لگ رہی ہے۔",
+      "quality": {
+        "duration_seconds": 5.333,
+        "peak": 0.526397705078125,
+        "rms_db": -20.261619567871094,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 2.770574532895357,
+        "dnsmos_bak": 3.31167613601727,
+        "dnsmos_ovrl": 2.3406957638950194
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/drama/audio/SPEAKER_0254_DRAMA_002530.wav"
+    },
+    {
+      "id": "f0bb424fb97799d9adcab52a",
+      "category": "drama",
+      "text": "ہاں میں جا رہا ہوں۔ رفیق، رات کا کھانا تم نے ادھر ہی کھانا ہے۔ اوکے؟ ٹھیک ہے۔ ٹھیک ہے۔ اوکے۔ اللہ حافظ۔",
+      "quality": {
+        "duration_seconds": 7.56,
+        "peak": 0.236083984375,
+        "rms_db": -23.065052032470703,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 1.6659088029730538,
+        "dnsmos_bak": 1.3957841812497815,
+        "dnsmos_ovrl": 1.2610167006042097
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/drama/audio/SPEAKER_0104_DRAMA_000832.wav"
+    },
+    {
+      "id": "09d805b12040d9c576308468",
+      "category": "roadside_interview",
+      "text": "یہ پکڑنا پلیٹ ایک منٹ۔ ایک منٹ پلیٹ پکڑنا۔",
+      "quality": {
+        "duration_seconds": 2.784,
+        "peak": 0.62255859375,
+        "rms_db": -21.063220977783203,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.092418376112201,
+        "dnsmos_bak": 1.7781110534991231,
+        "dnsmos_ovrl": 1.8224439913818948
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/roadside_interview/audio/SPEAKER_0290_ROADSIDE_INTERVIEW_004416.wav"
+    },
+    {
+      "id": "e5d6232d2937029361f2eb12",
+      "category": "roadside_interview",
+      "text": "نہیں نہیں پیسے تو دیں گے نہ انکل کے کہنے پہ سویٹ",
+      "quality": {
+        "duration_seconds": 2.7,
+        "peak": 0.9495849609375,
+        "rms_db": -17.715381622314453,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.1714930197756073,
+        "dnsmos_bak": 1.611001074535399,
+        "dnsmos_ovrl": 1.7274959527107776
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/roadside_interview/audio/SPEAKER_0001_ROADSIDE_INTERVIEW_000033.wav"
+    },
+    {
+      "id": "b290540079b3015e9263c5e0",
+      "category": "roadside_interview",
+      "text": "بالکل بالکل خاص کر زبان زبان بہت صاف ہے ماشاءاللہ",
+      "quality": {
+        "duration_seconds": 3.138,
+        "peak": 0.955413818359375,
+        "rms_db": -14.258195877075195,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.5580885363846195,
+        "dnsmos_bak": 2.5456653941409675,
+        "dnsmos_ovrl": 2.4680661132151287
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/roadside_interview/audio/SPEAKER_0262_ROADSIDE_INTERVIEW_004154.wav"
+    },
+    {
+      "id": "8761cd2e06ff3101e25eb5e8",
+      "category": "roadside_interview",
+      "text": "پاکستان میں بھی ہاں صحیح بات ہے آپ خوش قسمت ہیں کہ آپ کے ساتھ میں بیٹھتا ہوں اچھا یہ بات مکے میں کرنا بتاؤں گا آپ کو کوئی مسئلہ نہیں",
+      "quality": {
+        "duration_seconds": 8.64,
+        "peak": 0.81304931640625,
+        "rms_db": -18.667871475219727,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.6013626295721455,
+        "dnsmos_bak": 2.495376000394206,
+        "dnsmos_ovrl": 2.477656923528265
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/short/roadside_interview/audio/SPEAKER_0290_ROADSIDE_INTERVIEW_004321.wav"
+    },
+    {
+      "id": "631e948fbf3257f3da9ba9fd",
+      "category": "news",
+      "text": "چلے جاتے یا پاکستان کو کوئی ترقی میں کتنا اضافہ کرتے آپ یقین کریں کہ یہ ایک وقت کی کی ہوئی بات ہوتی ہے اس وقت وہی سپورٹ جو ہے وہ میاں شہباز شریف صاحب کو میسر ہے",
+      "quality": {
+        "duration_seconds": 13.347,
+        "peak": 0.716552734375,
+        "rms_db": -20.644287109375,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.682831933289955,
+        "dnsmos_bak": 3.760986967797151,
+        "dnsmos_ovrl": 3.2425144755463093
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": true,
+      "source_path": "corpus/US-Std/long/news/audio/SPEAKER_0047_NEWS_000354.wav"
+    },
+    {
+      "id": "0d9dc637ac104729b356ca0a",
+      "category": "news",
+      "text": "کراچی کے علاقے فیروز آباد سے مالک کے پیسوں پر مزے کرنے والا پانچ رکنی ماسی گینگ گرفتار کر لیا گیا۔ ماسیوں نے لاکر کی چابی چرا کر بڑا ہاتھ مارا۔ گینگ سرغنہ نے نیا گھر اور گاڑی تک لے رکھی تھی۔ نذیر شاہ کی رپورٹ۔",
+      "quality": {
+        "duration_seconds": 12.335,
+        "peak": 0.64605712890625,
+        "rms_db": -21.861000061035156,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.7531525625170388,
+        "dnsmos_bak": 3.697505642974011,
+        "dnsmos_ovrl": 3.2484899494756663
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": true,
+      "source_path": "corpus/US-Std/long/news/audio/SPEAKER_0254_NEWS_001771.wav"
+    },
+    {
+      "id": "05a723d98ab97ef5101a0990",
+      "category": "news",
+      "text": "یہی ہوتی ہے کہ جتنا امن پورے خطے میں رہ سکے تو استحکام ہی بہتر ہوتا ہے کسی بھی صورتحال کے لیے اور اس وقت ہمارے جو اہداف ہیں وہ اقتصادی ہیں جی اور اقتصادی ایک صورتحال پر ہم نے",
+      "quality": {
+        "duration_seconds": 16.689,
+        "peak": 0.727203369140625,
+        "rms_db": -20.315383911132812,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.4690422538360632,
+        "dnsmos_bak": 3.942769360659062,
+        "dnsmos_ovrl": 3.136448634134414
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": true,
+      "source_path": "corpus/US-Std/long/news/audio/SPEAKER_0090_NEWS_000567.wav"
+    },
+    {
+      "id": "2e9a43a8446447b074ccb2ad",
+      "category": "news",
+      "text": "جی شکریہ خواجہ صاحب آج جو اسپیکر قومی اسمبلی نے رابطہ کیا تھا پی ٹی آئی کی قیادت کے ساتھ اور ان سے انہوں نے کہا تھا کہ وہ آج ان کے چیمبر میں آئیں تاکہ باضابطہ طور پر نوٹیفیکیشن ان کے حوالے کر دیا جائے۔",
+      "quality": {
+        "duration_seconds": 12.133,
+        "peak": 0.915557861328125,
+        "rms_db": -20.371065139770508,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.3385525515208267,
+        "dnsmos_bak": 3.480901959828667,
+        "dnsmos_ovrl": 2.8576225684366365
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_path": "corpus/US-Std/long/news/audio/SPEAKER_0198_NEWS_001390.wav"
+    }
+  ],
+  "urdutts": [
+    {
+      "index": 0,
+      "text": " جگہ ہے اور مریم کے بیٹے کے لیے ناپنا ہے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 186368,
+        "output_frames": 101425,
+        "duration_seconds": 4.2260317460317465
+      },
+      "quality": {
+        "duration_seconds": 4.226041666666666,
+        "peak": 0.66815185546875,
+        "rms_db": -16.809696197509766,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 2.722824582367063,
+        "dnsmos_bak": 3.97669879121488,
+        "dnsmos_ovrl": 2.5020163907778685
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 1,
+      "text": " کہ درحقیقت کھینچنے والا ایک ہی ہے  لیکن وہ کئی ہو کر نظر آتا ہے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 268288,
+        "output_frames": 146008,
+        "duration_seconds": 6.0836281179138325
+      },
+      "quality": {
+        "duration_seconds": 6.083666666666667,
+        "peak": 0.65386962890625,
+        "rms_db": -16.933639526367188,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 2.7227676562411345,
+        "dnsmos_bak": 3.991669426065756,
+        "dnsmos_ovrl": 2.5156744820001973
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 2,
+      "text": " اور تجھ جب کے ساتھ حیرت میں نہ ڈالتی  الگرز میں اس کے بعد شیخ شیوخ العالم کی خدمت میں پہنچا",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 317440,
+        "output_frames": 172757,
+        "duration_seconds": 7.198185941043084
+      },
+      "quality": {
+        "duration_seconds": 7.1982083333333335,
+        "peak": 0.745086669921875,
+        "rms_db": -14.551979064941406,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.3580011165679475,
+        "dnsmos_bak": 4.012957580301433,
+        "dnsmos_ovrl": 3.075495656563207
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 3,
+      "text": " اضافہ کیا جائے گا  تجھے خدا تعالیٰ کے طرف سے شرحِ صدر  عطا ہوگی",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 227328,
+        "output_frames": 123716,
+        "duration_seconds": 5.154829931972789
+      },
+      "quality": {
+        "duration_seconds": 5.154833333333333,
+        "peak": 0.824432373046875,
+        "rms_db": -18.562997817993164,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.5183588532839334,
+        "dnsmos_bak": 4.187837260823898,
+        "dnsmos_ovrl": 3.321370124180291
+      },
+      "rejection": null,
+      "passes_current_acoustic_gates": true,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 4,
+      "text": " خدا کی ذات کا بھی علم ہے  اگر حضرت عیسیٰ علیہ السلام کے حکم سے مردہ زندہ ہو جاتا تھا",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 270336,
+        "output_frames": 147122,
+        "duration_seconds": 6.130068027210885
+      },
+      "quality": {
+        "duration_seconds": 6.130083333333333,
+        "peak": 0.869598388671875,
+        "rms_db": -15.292893409729004,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.3180914059539197,
+        "dnsmos_bak": 3.7182630635536347,
+        "dnsmos_ovrl": 2.9033065375679596
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 5,
+      "text": " شاید شجوق العالم نے فرمایا کہ ہمارے پیروں نے اس قسم کے فتوح قبول نہیں کی ہے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 263168,
+        "output_frames": 143221,
+        "duration_seconds": 5.9675283446712015
+      },
+      "quality": {
+        "duration_seconds": 5.9675416666666665,
+        "peak": 0.71600341796875,
+        "rms_db": -15.607708930969238,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.2764756300887137,
+        "dnsmos_bak": 4.058757128293515,
+        "dnsmos_ovrl": 3.033739204384151
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 6,
+      "text": " جب سب لوگ جمع ہو گئے تو بادشاہ نے دربار کرنے کا حکم دیا  اور فرمایا کہ ایک عظیم شان خیمہ نصب کریں",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 303104,
+        "output_frames": 164955,
+        "duration_seconds": 6.873106575963718
+      },
+      "quality": {
+        "duration_seconds": 6.873125,
+        "peak": 0.7132568359375,
+        "rms_db": -16.894752502441406,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.471957744759026,
+        "dnsmos_bak": 4.1305410043133,
+        "dnsmos_ovrl": 3.239254548783974
+      },
+      "rejection": null,
+      "passes_current_acoustic_gates": true,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 7,
+      "text": " اور میری صحت کا موجب ہو  جب یہ لوگ سلطان مشاہی کی خدمت میں پہنچے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 242688,
+        "output_frames": 132076,
+        "duration_seconds": 5.50312925170068
+      },
+      "quality": {
+        "duration_seconds": 5.503166666666667,
+        "peak": 0.73828125,
+        "rms_db": -15.236251831054688,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.253058712742378,
+        "dnsmos_bak": 3.9543365559748898,
+        "dnsmos_ovrl": 2.9610594803309516
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 8,
+      "text": " پچیس لاکھ سال پہلے انسان وجود میں آ چکا تھا",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 203776,
+        "output_frames": 110899,
+        "duration_seconds": 4.620770975056689
+      },
+      "quality": {
+        "duration_seconds": 4.620791666666666,
+        "peak": 0.506439208984375,
+        "rms_db": -20.346452713012695,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.508001369322853,
+        "dnsmos_bak": 2.773605817756121,
+        "dnsmos_ovrl": 2.635649506515043
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 9,
+      "text": " آپ فرمایا کرتے تھے کہ صفرِ حج کے دوران میرے پاؤں میں کانٹا چھپ گیا اور میں نے اس تصور سے نہیں نکالا کہ اس سے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 325632,
+        "output_frames": 177215,
+        "duration_seconds": 7.383945578231293
+      },
+      "quality": {
+        "duration_seconds": 7.383958333333333,
+        "peak": 0.9971923828125,
+        "rms_db": -19.325681686401367,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.4908760305106217,
+        "dnsmos_bak": 3.2376541191232575,
+        "dnsmos_ovrl": 2.834954177927134
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 10,
+      "text": " جب تک کوئی بیمار نہ ہو وہ نہ ان کو دیکھتا ہے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 181248,
+        "output_frames": 98639,
+        "duration_seconds": 4.1099319727891155
+      },
+      "quality": {
+        "duration_seconds": 4.109958333333333,
+        "peak": 0.671051025390625,
+        "rms_db": -16.014461517333984,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 2.8599718234913953,
+        "dnsmos_bak": 3.9749811031493625,
+        "dnsmos_ovrl": 2.615465906964133
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 11,
+      "text": " رابیہ کے یہاں پہنچا تو وہ پوری شب مشغول عبادت رہی",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 205824,
+        "output_frames": 112014,
+        "duration_seconds": 4.667210884353741
+      },
+      "quality": {
+        "duration_seconds": 4.66725,
+        "peak": 0.80877685546875,
+        "rms_db": -18.95416259765625,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.6814801282345564,
+        "dnsmos_bak": 4.158666178674644,
+        "dnsmos_ovrl": 3.4593310400667114
+      },
+      "rejection": null,
+      "passes_current_acoustic_gates": true,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 12,
+      "text": " لیکن صدھایا بعد میں گیا تھا",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 88064,
+        "output_frames": 47926,
+        "duration_seconds": 1.9969160997732427
+      },
+      "quality": {
+        "duration_seconds": 1.9969166666666667,
+        "peak": 0.566986083984375,
+        "rms_db": -20.2996826171875,
+        "clipped_fraction": 0.0
+      },
+      "rejection": "duration",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 13,
+      "text": " کہ اس نے کر رہا ہے عرض پر جانوروں اور نباتات کی تقریباً اقسام کو",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 214016,
+        "output_frames": 116472,
+        "duration_seconds": 4.85297052154195
+      },
+      "quality": {
+        "duration_seconds": 4.853,
+        "peak": 0.524383544921875,
+        "rms_db": -17.76479721069336,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.498574414115551,
+        "dnsmos_bak": 2.9876437145737507,
+        "dnsmos_ovrl": 2.6986339483643147
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 14,
+      "text": " غرص کے آپ کے آگے سے کھانا اٹھا لیا جاتا  اور بغیر سہری کیے روزہ رکھتے  الکسہ جب روزہ روشن ہوتا  تو جس شخص کی سلطان المشاہ کے جمال مبارک پر نظر پڑتی",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 508928,
+        "output_frames": 276968,
+        "duration_seconds": 11.54031746031746
+      },
+      "quality": {
+        "duration_seconds": 11.540333333333333,
+        "peak": 0.791107177734375,
+        "rms_db": -14.521541595458984,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.120768586689072,
+        "dnsmos_bak": 3.481859946627187,
+        "dnsmos_ovrl": 2.6550894871354984
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 15,
+      "text": " ترجمہ شیر چاند سے آسمان کے ارکان نور لیتے ہیں",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 210944,
+        "output_frames": 114800,
+        "duration_seconds": 4.783310657596372
+      },
+      "quality": {
+        "duration_seconds": 4.783333333333333,
+        "peak": 0.67498779296875,
+        "rms_db": -15.378149032592773,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.1818961605432365,
+        "dnsmos_bak": 3.9409421514405105,
+        "dnsmos_ovrl": 2.8867019822138933
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 16,
+      "text": " تو وہ پرواہنا نہیں  اور اگر آپ نے آپ کو شما کے طور پر گرائے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 185344,
+        "output_frames": 100868,
+        "duration_seconds": 4.20281179138322
+      },
+      "quality": {
+        "duration_seconds": 4.202833333333333,
+        "peak": 0.675018310546875,
+        "rms_db": -16.341873168945312,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.139821176640848,
+        "dnsmos_bak": 3.3969700314662536,
+        "dnsmos_ovrl": 2.622539582852485
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 17,
+      "text": " اس جسم میں ہر عضو کا مخصوص کردار وضع کر دیا گیا ہے",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 202752,
+        "output_frames": 110342,
+        "duration_seconds": 4.597551020408163
+      },
+      "quality": {
+        "duration_seconds": 4.597583333333334,
+        "peak": 0.54217529296875,
+        "rms_db": -17.31940460205078,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.5903725349891444,
+        "dnsmos_bak": 2.695162649023019,
+        "dnsmos_ovrl": 2.651549633216613
+      },
+      "rejection": "dnsmos_bak",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 18,
+      "text": " اگر اپنا راز کسی ایک سے کہہ دیا تو وہ پھر",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 149504,
+        "output_frames": 81363,
+        "duration_seconds": 3.3901133786848074
+      },
+      "quality": {
+        "duration_seconds": 3.390125,
+        "peak": 0.683319091796875,
+        "rms_db": -16.588327407836914,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.597348276776484,
+        "dnsmos_bak": 4.210480088782878,
+        "dnsmos_ovrl": 3.4372548484237386
+      },
+      "rejection": null,
+      "passes_current_acoustic_gates": true,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    },
+    {
+      "index": 19,
+      "text": " حضرت سلمان علیہ السلام ہی ہے  لیکن یہ تنہا اور چھپا ہوا کیوں ہے  اس خیال میں وہ دو دل ہو رہا تھا کہ چہرہ",
+      "properties": {
+        "source_rate": 44100,
+        "source_channels": 1,
+        "source_frames": 373760,
+        "output_frames": 203407,
+        "duration_seconds": 8.475283446712018
+      },
+      "quality": {
+        "duration_seconds": 8.475291666666667,
+        "peak": 0.685546875,
+        "rms_db": -14.596366882324219,
+        "clipped_fraction": 0.0,
+        "vad_fraction": 1.0,
+        "dnsmos_sig": 3.123977495758047,
+        "dnsmos_bak": 3.096627222859672,
+        "dnsmos_ovrl": 2.5078660495805747
+      },
+      "rejection": "dnsmos_sig",
+      "passes_current_acoustic_gates": false,
+      "source_shard": "train/data-00000-of-00041.arrow"
+    }
+  ],
+  "asr_checked": false,
+  "note": "Small public-source smoke probe, not representative corpus statistics or human MOS.",
+  "thresholds": {
+    "minimum_dnsmos_ovrl": 3.1,
+    "minimum_dnsmos_sig": 3.4,
+    "minimum_dnsmos_bak": 3.5
+  },
+  "sources": {
+    "dataset_id": "kaab4321/UrduTTS",
+    "dataset_revision": "a012374328f140d2647e9138e6ceae85d4ee9f2c",
+    "aslp_id": "ASLP-lab/UrduSpeech",
+    "aslp_revision": "16dd380cfd9049a3db7f06a98e878086916bf833"
+  },
+  "date": "2026-11-08"
+}

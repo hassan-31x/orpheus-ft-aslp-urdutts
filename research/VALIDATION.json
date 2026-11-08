@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-08",
+  "cpu_tests": 159,
+  "cpu_tests_passed": true,
+  "aslp_waveform_probes": 19,
+  "urdutts_waveform_probes": 20,
+  "real_dnsmos_vad_conversion": true,
+  "cpu_asr_diagnostic_model": "Systran/faster-whisper-small",
+  "production_large_v3_cuda_verified": false,
+  "kaggle_smoke_executed": false,
+  "original_urdutts_resumed": false,
+  "mixed_training_started": false,
+  "github_hf_authenticated": true,
+  "hf_write_read_preflights_passed": true,
+  "kaggle_blocker": "No Kaggle credentials were available; private credential requests timed out."
+}
