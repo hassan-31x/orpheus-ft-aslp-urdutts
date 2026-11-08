@@ -13,6 +13,8 @@ class ExternalCheckpointTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
         self.cfg = json.loads((Path(__file__).resolve().parents[1]/"configs/mixed.json").read_text())
+        # Remote fixtures are independent of the production checkpoint pinned in config.
+        self.cfg["init_source"].update(revision=None, checkpoint=None)
         self.api = SimpleNamespace(model_info=lambda *a, **k: SimpleNamespace(sha="a"*40))
         self.downloaded = []
         self.run = self.root/"destination"

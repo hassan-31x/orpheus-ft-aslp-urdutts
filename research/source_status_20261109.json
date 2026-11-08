@@ -1,0 +1,14 @@
+{
+  "verified_at_utc": "2026-11-09",
+  "repo_id": "hassan-31x/orpheus-urdutts-checkpoints",
+  "revision": "8494444672fd2e1b3e44758a24b17ef70b8e5ad4",
+  "run_id": "urdutts-r32-lr1e4-seed3407-epoch1",
+  "checkpoint": "checkpoint-5029",
+  "status": "complete",
+  "global_step": 5029,
+  "max_steps": 5029,
+  "epoch": 1.0,
+  "full_validation_loss": 4.202766418457031,
+  "kaggle_gpu_quota_remaining_seconds": 6732.759,
+  "mixed_gpu_smoke": "not_started"
+}

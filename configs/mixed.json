@@ -58,9 +58,9 @@
   "dataset_include_test": false,
   "init_source": {
     "repo_id": "hassan-31x/orpheus-urdutts-checkpoints",
-    "revision": null,
+    "revision": "8494444672fd2e1b3e44758a24b17ef70b8e5ad4",
     "run_id": "urdutts-r32-lr1e4-seed3407-epoch1",
-    "checkpoint": null
+    "checkpoint": "checkpoint-5029"
   },
   "mixture": {
     "aslp_id": "ASLP-lab/UrduSpeech",
