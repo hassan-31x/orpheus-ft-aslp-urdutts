@@ -3,11 +3,31 @@ import argparse
 import importlib.metadata as metadata
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import venv
 
 CUDA_PACKAGES = ('torch', 'torchvision', 'torchaudio', 'triton', 'xformers')
+
+
+def cuda_xformers_command(python, torch_version):
+    """Use the official CUDA wheel, never the CUDA-less PyPI wheel.
+
+    xFormers 0.0.35 uses the Torch 2.10+ stable ABI. Its cu130 wheel
+    explicitly includes sm_75 (T4); FlashAttention itself need not support T4.
+    --no-deps preserves the host's Torch/CUDA stack.
+    """
+    from packaging.version import Version
+    version = Version(torch_version)
+    cuda = re.fullmatch(r'cu(126|128|130)', version.local or '')
+    if not (Version('2.10') <= version < Version('2.13')) or not cuda:
+        raise RuntimeError('This GPU bootstrap requires Torch 2.10–2.12 with a '
+                           'cu126/cu128/cu130 build; found ' + torch_version)
+    return [python, '-m', 'pip', 'install', '--no-cache-dir', '--progress-bar', 'off',
+            '--force-reinstall', '--no-deps', '--only-binary=:all:',
+            '--index-url', 'https://download.pytorch.org/whl/' + version.local,
+            'xformers==0.0.35']
 
 
 def cuda_constraints(version=metadata.version):
@@ -50,6 +70,9 @@ def main():
     # Inherit CUDA wheels to avoid several GB of duplicate downloads. Pip installs
     # shadowing project packages into the venv; the host kernel stays unchanged.
     locked = cuda_constraints()
+    if args.gpu:
+        locked = [item for item in locked if not item.startswith('xformers==')]
+        locked.append('xformers==0.0.35')
     target.mkdir(parents=True, exist_ok=True)
     evidence = target.parent / (target.name + '-setup')
     evidence.mkdir(parents=True, exist_ok=True)
@@ -57,6 +80,8 @@ def main():
     constraints.write_text('\n'.join(locked) + '\n')
     create_environment(target, evidence)
     python = str(target / 'bin' / 'python')
+    # Resolve before installation so unsupported images fail without package changes.
+    attention_install = cuda_xformers_command(python, metadata.version('torch')) if args.gpu else None
     command = [python, '-m', 'pip', 'install', '--no-cache-dir', '--progress-bar', 'off', '--constraint', str(constraints), '--report',
                str(evidence / 'installation.json'), '-r', str(repo / 'requirements-kaggle.txt')]
     # Stream output to both Kaggle and a persistent setup log, preserving failure.
@@ -70,6 +95,10 @@ def main():
         if process.wait():
             raise RuntimeError(f'Installation failed. See {evidence}/installation.log. '
                                'CUDA wheels are locked; do not upgrade them blindly.')
+    if attention_install:
+        print('Installing xFormers CUDA operators from the matching official Torch index', flush=True)
+        subprocess.run(attention_install, check=True)
+        subprocess.run([python, '-m', 'xformers.info'], check=True)
     freeze = subprocess.check_output([python, '-m', 'pip', 'freeze'], text=True)
     (evidence / 'resolved-requirements.txt').write_text(freeze)
     command = [python, str(repo / 'check_environment.py'), '--report',

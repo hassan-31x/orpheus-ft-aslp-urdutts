@@ -57,6 +57,8 @@ No denoising, time stretching, speech truncation, fabricated emotion tags or new
 
 **Wait until the original epoch is finished.** Then import **[kaggle_run.ipynb](kaggle_run.ipynb)** with Internet, a T4 GPU and `HF_TOKEN` access to both private repos.
 
+GPU setup preserves Kaggle's Torch/CUDA packages and explicitly reinstalls xFormers 0.0.35 from the matching official PyTorch CUDA index (cu126, cu128 or cu130). The PyPI wheel can lack CUDA operators. Supported Torch builds are 2.10–2.12; the causal-attention forward/backward check must pass on the actual GPU before training starts. See the [upstream installation instructions](https://github.com/facebookresearch/xformers#installing-xformers).
+
 1. Keep `TEST=True`. The smoke run selects up to 20 training and 10 validation examples across both sources, uses a separate run ID and goes through the real quality, SNAC, training and remote-backup path. Screening and large-v3 downloads make this more expensive than a 20-row test of already-prepared data.
 2. The notebook resolves the completed source to a fixed Hub commit/checkpoint. It verifies the snapshot pointer and checkpoint seal, imports adapter weights only and records their SHA-256. It refuses paused/smoke parents, incompatible base revisions/ranks, or corrupted weights.
 3. A passing smoke run requires finite validation loss, final adapter, sealed full checkpoint and current remote backup. It publishes a receipt tied to code, source weights and training settings. Listen to generated speech separately; the receipt does not certify naturalness.

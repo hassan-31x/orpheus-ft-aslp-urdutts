@@ -77,11 +77,14 @@ def smoke(gpu=False):
             raise RuntimeError('Torch 2.6+ is required for resumable Trainer checkpoints')
         if not torch.cuda.is_available():
             raise RuntimeError('Enable a Kaggle NVIDIA GPU before running --gpu')
-        x = torch.randn(1, 16, 2, 32, device='cuda', dtype=torch.float16, requires_grad=True)
-        xformers.ops.memory_efficient_attention(x, x, x).float().sum().backward()
+        x = torch.randn(1, 32, 2, 128, device='cuda', dtype=torch.float16, requires_grad=True)
+        xformers.ops.memory_efficient_attention(
+            x, x, x, attn_bias=xformers.ops.LowerTriangularMask()).float().sum().backward()
         torch.cuda.synchronize()
         return {'torch': torch.__version__, 'cuda': torch.version.cuda,
-                'device': torch.cuda.get_device_name(0), 'attention_backward': 'passed'}
+                'device': torch.cuda.get_device_name(0),
+                'capability': torch.cuda.get_device_capability(0),
+                'xformers': metadata.version('xformers'), 'attention_backward': 'passed'}
     return {'parquet': 'passed', 'audio': 'passed'}
 
 

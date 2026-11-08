@@ -11,10 +11,24 @@ from unittest.mock import patch
 
 from packaging.requirements import Requirement
 from check_environment import check_dependencies
-from setup_kaggle import cuda_constraints, create_environment
+from setup_kaggle import cuda_constraints, create_environment, cuda_xformers_command
 
 
 class EnvironmentTests(unittest.TestCase):
+    def test_xformers_cuda_wheel_matches_torch_without_replacing_dependencies(self):
+        for cuda in ('cu126', 'cu128', 'cu130'):
+            command = cuda_xformers_command('/env/bin/python', '2.11.0+' + cuda)
+            self.assertEqual(command[0], '/env/bin/python')
+            self.assertIn('https://download.pytorch.org/whl/' + cuda, command)
+            self.assertIn('--no-deps', command)
+            self.assertIn('--force-reinstall', command)
+            self.assertEqual(command[-1], 'xformers==0.0.35')
+
+    def test_xformers_rejects_cpu_unknown_cuda_and_incompatible_torch(self):
+        for version in ('2.11.0', '2.11.0+cpu', '2.11.0+cu999', '2.9.0+cu128'):
+            with self.assertRaises(RuntimeError):
+                cuda_xformers_command('/env/bin/python', version)
+
     def graph(self, values):
         def distribution(name):
             if name not in values:
