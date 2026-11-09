@@ -100,3 +100,30 @@ GPU training, CUDA ASR execution, dependency installation on Kaggle and multi-GB
 ## Optional Kaggle API submission
 
 Install the Kaggle CLI/SDK separately (`pip install kaggle six`) and authenticate through its supported credential mechanism. `kaggle_submit.py draft` publishes the mixed notebook privately without running it. `kaggle_submit.py resume --existing-kernel OWNER/SLUG` submits a new version of the existing original notebook. In the tested API submission, the new version could not read the existing secret: open Edit → Add-ons → Secrets, enable HF_TOKEN, then Save Version → Save & Run All in Kaggle. New notebooks require enabling HF_TOKEN in the Secrets UI; the API does not grant secret access. `smoke` and `full` are for after the parent epoch completes. API submission is not evidence that a training process reached the first optimizer step.
+
+## Preserve screening across session limits
+
+The original full notebook only backed up the completed selection. Partial ASLP
+quality records and UrduTTS shard cursors stayed on the Kaggle filesystem.
+For the already-running primary session, leave it running and retain its saved
+outputs. After it ends, `kaggle_screening_resume.ipynb` attaches those outputs,
+imports only an exactly matching screening recipe, and publishes a recovery
+snapshot before continuing. It refuses to start from scratch if the first import
+is unavailable. Never run it concurrently with the source job under the same run ID.
+
+The embedded `screening_recovery.py` supervisor leaves the smoke-tested training
+code pinned to commit `816474a`. It saves atomic Hugging Face snapshots every ten
+minutes and when the child exits, including quality records, completed-shard
+cursors and shortlist audio. Interrupted snapshots cannot replace the last good
+pointer; live shortlist checksums must match. A mid-shard interruption repeats
+that shard, not completed shards. Previously rejected ASLP audio may be downloaded
+again to identify its cached score, but the matching Whisper/DNSMOS result is reused.
+Hard termination can lose work since the last successful backup. The currently
+running older notebook cannot gain this supervisor in place: its saved Kaggle
+outputs are required for the first migration. Output availability is checked on
+resume, not assumed.
+
+For later epochs, retain this supervisor and attach the preceding completed run's
+outputs, use a new run ID and set `INIT_FROM_RUN` to the completed mixed run.
+Keep the preparation recipe unchanged to reuse its selected dataset. The full-run
+smoke gate still applies to training-configuration changes.
