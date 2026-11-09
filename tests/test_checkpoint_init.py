@@ -1,8 +1,11 @@
 import json
+import errno
+import os
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 from checkpoint_init import inspect_source, stage_external_adapter
 from orpheus_utils import atomic_json, sha256
@@ -75,6 +78,37 @@ class ExternalCheckpointTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "checksum"):
             stage_external_adapter(self.cfg, self.run, api=self.api, download=self.download)
         self.assertFalse((self.run/"init_source.json").exists())
+
+    def symlink_fixture(self):
+        self.fixture()
+        self.run = self.root/"work/runs/stage"
+        self.run.mkdir(parents=True)
+        for name in ("adapter_config.json", "adapter_model.safetensors"):
+            path = self.root/"snapshot/checkpoint-5000"/name
+            blob = self.root/"blobs"/name
+            blob.parent.mkdir(exist_ok=True)
+            path.replace(blob)
+            path.symlink_to(os.path.relpath(blob, path.parent))
+
+    def test_hub_relative_symlinks_stage_regular_files_on_linux(self):
+        self.symlink_fixture()
+        link = os.link
+        # Linux link(2) can hardlink the symlink itself; simulate that on macOS too.
+        with patch('checkpoint_init.os.link', side_effect=lambda src, dst: link(src, dst, follow_symlinks=False)):
+            result = stage_external_adapter(self.cfg, self.run, api=self.api, download=self.download)
+        for name in ("adapter_config.json", "adapter_model.safetensors"):
+            self.assertFalse((result/name).is_symlink())
+            self.assertTrue((result/name).samefile(self.root/"blobs"/name))
+            (self.root/"snapshot/checkpoint-5000"/name).unlink()
+            self.assertTrue((result/name).is_file())
+        self.assertEqual((result/"adapter_model.safetensors").read_bytes(), b"trained lora tensors")
+
+    def test_hub_relative_symlinks_copy_when_hardlinks_are_unavailable(self):
+        self.symlink_fixture()
+        with patch('checkpoint_init.os.link', side_effect=OSError(errno.EXDEV, 'different filesystem')):
+            result = stage_external_adapter(self.cfg, self.run, api=self.api, download=self.download)
+        self.assertFalse((result/"adapter_config.json").is_symlink())
+        self.assertEqual((result/"adapter_model.safetensors").read_bytes(), b"trained lora tensors")
 
     def test_cached_adapter_tampering_is_detected(self):
         self.fixture()

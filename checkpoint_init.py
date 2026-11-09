@@ -78,7 +78,10 @@ def stage_external_adapter(cfg, run, *, api=None, download=None):
     target.mkdir(exist_ok=True)
     files = {}
     for name in ("adapter_config.json", "adapter_model.safetensors"):
-        source = verified(cp + "/" + name)
+        # Hub snapshot paths are relative symlinks into the cache's blobs/.
+        # Linux hardlinking can preserve that symlink, which breaks after moving
+        # it into init_adapter. Link the verified blob itself instead.
+        source = verified(cp + "/" + name).resolve(strict=True)
         temp = target / (name + ".tmp")
         temp.unlink(missing_ok=True)
         try:
