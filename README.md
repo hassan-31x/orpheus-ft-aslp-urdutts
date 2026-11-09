@@ -127,3 +127,10 @@ For later epochs, retain this supervisor and attach the preceding completed run'
 outputs, use a new run ID and set `INIT_FROM_RUN` to the completed mixed run.
 Keep the preparation recipe unchanged to reuse its selected dataset. The full-run
 smoke gate still applies to training-configuration changes.
+
+Before spending GPU quota on the first recovery, run
+`kaggle_screening_rescue_cpu.ipynb` after the source session's outputs become
+available. Its accelerator is disabled. It uploads the matching cache and restores
+it again with archive and shortlist checksums, writing `recovery_verified.json`.
+If it fails, do not launch another GPU session. It cannot access live files while
+the older committed notebook is still running.
