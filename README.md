@@ -76,6 +76,8 @@ Artifacts remain private under `runs/<run_id>/`. Important evidence includes `da
 
 Interrupted stage 2: rerun the same commit/config/run ID to restore its own full checkpoint. A later completed mixed-data epoch can seed a new run through `INIT_FROM_RUN`; use a new run ID. Code/settings changes require a new experiment and smoke receipt.
 
+For the November 9 interrupted Arrow download, `kaggle_retry.ipynb` pins training code to `816474a` and mounts the failed full notebook's outputs. Its embedded `restore_screening_cache.py` can copy compatible ASLP WAVs/conversion records and quality caches into the new preparation directory. It permits only the recorded transport-only source change; data revisions, quality code/thresholds, packages, split seed and subset settings must match. It records both recipes and imported-file counts, leaves an already selected dataset untouched, and never imports optimizer state. The full retry still requires a passing smoke receipt for `816474a`.
+
 ## Evaluation and validation
 
 Compare the completed UrduTTS parent and mixed adapter on identical unseen prompts/seeds. Use **[benchmark_prompts.csv](benchmark_prompts.csv)** for questions, casual responses, numbers and pronunciation contrasts. **[compare_adapters.py](compare_adapters.py)** generates paired samples sequentially. Source-specific validation losses are saved alongside aggregate loss. Blind native-listener ratings should assess intelligibility and conversational naturalness separately. ASR CER/WER are intelligibility proxies and must be calibrated on real Urdu references; loss and pitch variation alone do not establish naturalness.
