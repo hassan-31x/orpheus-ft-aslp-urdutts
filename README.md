@@ -51,6 +51,8 @@ Selection layers:
 
 UrduTTS is pinned to the same dataset commit as epoch 1. Only released `train` supplies replay; released `eval` supplies monitoring. `test` is untouched. The full workflow acoustically scans **all training shards**, retaining only a bounded highest-scoring shortlist on disk, then ASR-checks that shortlist. It selects the highest-ranked survivors up to the replay-hours budget. It does not claim to ASR-check every released training clip or to establish a globally optimal subset. The top shortlist is three times the required replay duration by default. The eval scan is bounded to avoid spending hours on monitoring preparation.
 
+Each Arrow shard downloads into a temporary Hub cache before parsing, with up to five resumable transfer attempts. The same cache is kept between attempts; partial downloads never yield training rows. The shard cache is deleted after iteration or failure, so raw shards do not accumulate across the full release.
+
 No denoising, time stretching, speech truncation, fabricated emotion tags or new speaker tokens are introduced. Audio is converted to 24 kHz mono PCM16. UrduTTS has no speaker labels; no global speaker-disjointness or gender balance is claimed. Its transcripts were themselves generated with Whisper, so agreement with another Whisper model is partly correlated evidence. ASLP paralinguistic descriptions do not constitute independently verified overlap detection.
 
 ## Stage-2 training and Kaggle

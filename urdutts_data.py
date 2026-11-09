@@ -10,6 +10,7 @@ import io
 import logging
 import math
 import re
+import tempfile
 from pathlib import Path
 
 from orpheus_utils import atomic_json, contained, fingerprint, read_json, sha256
@@ -47,22 +48,30 @@ def fetch_json(cfg, filename):
 
 
 def stream_rows(cfg, filename, limit=None):
-    """Stream IPC record batches over HTTPS; never retain a source shard on disk.
+    """Read one fully downloaded shard; retry/resume transfers before yielding rows.
 
-    Arrow still reads an entire record batch (up to ~500 MB in this release).
-    Smoke mode stops after its requested rows rather than visiting every shard.
-    Network errors propagate to the shard retry; malformed IPC is a hard failure.
+    Keep the Hub cache across retries so partial downloads can resume. The
+    temporary shard is released when iteration finishes, closes or fails.
+    Arrow already needs a whole record batch (~500 MB) even for smoke subsets.
     """
     import pyarrow as pa
     import requests
     from urllib3.exceptions import HTTPError as TransportError
-    from huggingface_hub import hf_hub_url
-    url = hf_hub_url(cfg["dataset_id"], filename, repo_type="dataset", revision=cfg["dataset_revision"])
-    try:
-        with requests.get(url, stream=True, timeout=(30, 180)) as response:
-            response.raise_for_status()
-            response.raw.decode_content = True
-            with pa.ipc.open_stream(response.raw) as reader:
+    from huggingface_hub import hf_hub_download
+    scratch = Path(cfg["work_dir"]) / "source_shards"
+    scratch.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="urdutts-", dir=scratch) as cache:
+        def download():
+            try:
+                return hf_hub_download(cfg["dataset_id"], filename, repo_type="dataset",
+                                       revision=cfg["dataset_revision"], cache_dir=cache)
+            except (requests.ConnectionError, requests.Timeout,
+                    requests.exceptions.ChunkedEncodingError, TransportError) as exc:
+                raise ConnectionError(f"Interrupted source transfer: {filename}") from exc
+        LOG.info("Downloading resumable UrduTTS shard: %s", filename)
+        shard = retry_io(download, attempts=5)
+        with pa.memory_map(str(shard), "r") as source:
+            with pa.ipc.open_stream(source) as reader:
                 if not {"audio", cfg["dataset_text_column"]} <= set(reader.schema.names):
                     raise ValueError(f"{filename}: missing audio/transcription columns: {reader.schema}")
                 count = 0
@@ -74,10 +83,6 @@ def stream_rows(cfg, filename, limit=None):
                         count += 1
                     if limit is not None and count >= limit:
                         return
-    except TransportError as exc:
-        # raw.read() exposes urllib3 errors instead of requests' wrapped errors.
-        # Retry the shard, never classify a broken connection as a bad audio row.
-        raise ConnectionError(f"Interrupted source transfer: {filename}") from exc
 
 
 def convert_audio(audio, destination):

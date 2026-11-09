@@ -30,6 +30,7 @@ class UrduTTSDataTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.work = Path(self.tmp.name)
         self.cfg = json.loads(DEFAULTS.read_text())
+        self.cfg["work_dir"] = str(self.work)
         self.cfg.update(test_train_clips=2, test_validation_clips=1, run_id='urdutts-smoke')
         self.requests = []
 
@@ -122,15 +123,64 @@ class UrduTTSDataTests(unittest.TestCase):
         buffer = io.BytesIO()
         with pa.ipc.new_stream(buffer, table.schema) as writer:
             writer.write_table(table)
-        response = unittest.mock.MagicMock()
-        response.raw = io.BytesIO(buffer.getvalue())
-        response.__enter__.return_value = response
-        with patch('requests.get', return_value=response) as get:
+        shard = self.work/'source.arrow'
+        shard.write_bytes(buffer.getvalue())
+        with patch('huggingface_hub.hf_hub_download', return_value=str(shard)) as get:
             rows = list(stream_rows(self.cfg, 'train/a.arrow', limit=1))
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][1]['transcription'], example()['transcription'])
-        self.assertIn(self.cfg['dataset_revision'], get.call_args.args[0])
-        self.assertTrue(get.call_args.kwargs['stream'])
+        self.assertEqual(get.call_args.kwargs['revision'], self.cfg['dataset_revision'])
+        self.assertEqual(get.call_args.kwargs['repo_type'], 'dataset')
+        self.assertFalse(Path(get.call_args.kwargs['cache_dir']).exists())
+
+    def test_interrupted_shard_resumes_same_cache_before_yielding_any_rows(self):
+        import requests
+        table = pa.Table.from_pylist([example(), example(1)])
+        data = io.BytesIO()
+        with pa.ipc.new_stream(data, table.schema) as writer:
+            writer.write_table(table)
+        caches = []
+        def download(*args, **kwargs):
+            cache = Path(kwargs['cache_dir'])
+            caches.append(cache)
+            partial = cache/'download.incomplete'
+            if len(caches) == 1:
+                partial.write_bytes(b'partial transfer')
+                raise requests.exceptions.ChunkedEncodingError('connection interrupted')
+            self.assertEqual(partial.read_bytes(), b'partial transfer')
+            shard = cache/'complete.arrow'
+            shard.write_bytes(data.getvalue())
+            return str(shard)
+        with patch('huggingface_hub.hf_hub_download', side_effect=download), \
+             patch('pipeline_recovery.time.sleep'):
+            rows = list(stream_rows(self.cfg, 'train/a.arrow'))
+        self.assertEqual([i for i, row in rows], [0, 1])
+        self.assertEqual(caches[0], caches[1])
+        self.assertFalse(caches[0].exists())
+
+    def test_invalid_arrow_is_not_retried_and_temporary_shard_is_reclaimed(self):
+        shard = self.work/'invalid.arrow'
+        shard.write_bytes(b'not an Arrow stream')
+        with patch('huggingface_hub.hf_hub_download', return_value=str(shard)) as get:
+            with self.assertRaises(pa.ArrowInvalid):
+                list(stream_rows(self.cfg, 'train/a.arrow'))
+        self.assertEqual(get.call_count, 1)
+        self.assertFalse(Path(get.call_args.kwargs['cache_dir']).exists())
+
+    def test_exhausted_transfer_retries_yield_nothing_and_reclaim_partial_files(self):
+        import requests
+        from pipeline_recovery import retry_io
+        def interrupted(*args, **kwargs):
+            (Path(kwargs['cache_dir'])/'download.incomplete').write_bytes(b'partial')
+            raise requests.exceptions.ChunkedEncodingError('interrupted')
+        with patch('huggingface_hub.hf_hub_download', side_effect=interrupted) as get, \
+             patch('urdutts_data.retry_io', side_effect=lambda operation, attempts:
+                   retry_io(operation, attempts=attempts, sleep=lambda _: None)):
+            iterator = stream_rows(self.cfg, 'train/a.arrow')
+            with self.assertRaisesRegex(ConnectionError, 'Interrupted source transfer'):
+                next(iterator)
+        self.assertEqual(get.call_count, 5)
+        self.assertEqual(list((self.work/'source_shards').iterdir()), [])
 
 
 if __name__ == '__main__':
