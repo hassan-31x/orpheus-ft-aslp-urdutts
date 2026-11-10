@@ -109,7 +109,10 @@ def cli():
         p.error("maximum_rejected_train_fraction must be in [0, 1)")
     if cfg["optimizer"] not in ("adamw_torch", "adamw_8bit"):
         p.error("optimizer must be adamw_torch or adamw_8bit")
-    from mixed_data import validate_config
+    if cfg.get("stage2_dataset"):
+        from stage2_data import validate_config
+    else:
+        from mixed_data import validate_config
     try:
         validate_config(cfg)
     except ValueError as exc:
@@ -231,7 +234,8 @@ def find_data(cfg, work):
     # The subprocess owns the ASR model/CUDA allocator; all of it exits before training.
     config, result = work / "preparation-config.json", work / "prepared-dataset.json"
     saved_selection = work/"runs"/cfg["run_id"]/"dataset_source.json"
-    if saved_selection.is_file():
+    # The curated stage-2 dataset is pinned and re-materialised deterministically; nothing to restore.
+    if saved_selection.is_file() and not cfg.get("stage2_dataset"):
         from mixed_data import restore_selection
         restore_selection(cfg, work, saved_selection)
     atomic_json(config, cfg)
@@ -912,7 +916,7 @@ def train(cfg, ds, tokenizer, splits, run, store, identity, session_start):
     atomic_json(final / "run_identity.json", identity)
     atomic_json(final / "resolved_config.json", cfg)
     metrics = trainer.evaluate(eval_dataset=ds["validation"], metric_key_prefix="full_validation")
-    if cfg.get("mixture"):
+    if cfg.get("mixture") or cfg.get("stage2_dataset"):
         # A combined loss can conceal pronunciation regression in the replay source.
         for source in ("aslp", "urdutts"):
             indices = [i for i, row in enumerate(splits["validation"]) if row.get("source") == source]
@@ -1049,7 +1053,7 @@ def main():
             token_identity = dict(format_version=FORMAT_VERSION, model_id=cfg["model_id"],
                                   model_revision=cfg["model_revision"], tokenizer_sha256=vocab_hash,
                                   encoding_source_sha256={name: sha256(Path(__file__).parent / name) for name in
-                                                          ("finetune_mixed.py", "urdutts_data.py", "mixed_data.py", "quality.py", "mixture.py", "orpheus_utils.py", "pipeline_recovery.py")},
+                                                          ("finetune_mixed.py", "urdutts_data.py", "mixed_data.py", "stage2_data.py", "quality.py", "mixture.py", "orpheus_utils.py", "pipeline_recovery.py")},
                                   encoding_packages={name: importlib.metadata.version(name) for name in
                                                      ("torch", "snac", "tokenizers", "soundfile", "numpy")},
                                   codec=CODEC_ID, codec_revision=cfg["codec_revision"],
@@ -1069,7 +1073,7 @@ def main():
                             initialization=read_json(run/"init_source.json") if (run/"init_source.json").is_file() else None,
                             packages=env["packages"], torch=env["torch"],
                             source_sha256={name: sha256(Path(__file__).parent / name) for name in
-                                           ("finetune_mixed.py", "urdutts_data.py", "mixed_data.py", "quality.py", "mixture.py", "checkpoint_init.py", "prepare_mixture.py", "audio_storage.py", "orpheus_utils.py", "synthesize.py", "pipeline_recovery.py")})
+                                           ("finetune_mixed.py", "urdutts_data.py", "mixed_data.py", "stage2_data.py", "quality.py", "mixture.py", "checkpoint_init.py", "prepare_mixture.py", "audio_storage.py", "orpheus_utils.py", "synthesize.py", "pipeline_recovery.py")})
             identity_path = run / "run_identity.json"
             reconcile_run_identity(run, identity)
             atomic_json(run / "environment.json", env)
@@ -1112,10 +1116,11 @@ def main():
                                      if p.is_file() and p.name != ".lock"])
                 LOG.info("Preparation complete; reuse same config/run_id for training")
                 return
-            from audio_storage import release_encoded_audio
-            set_activity("verifying token cache and reclaiming converted audio")
-            release_encoded_audio(root, cache, run, cfg)
-            upload_files(store, [(run / "audio_storage.json", "preparation/audio_storage.json")])
+            if not cfg.get("stage2_dataset"):  # curated FLAC (~4.5 GB) stays: later epochs re-encode nothing but reuse it
+                from audio_storage import release_encoded_audio
+                set_activity("verifying token cache and reclaiming converted audio")
+                release_encoded_audio(root, cache, run, cfg)
+                upload_files(store, [(run / "audio_storage.json", "preparation/audio_storage.json")])
             train(cfg, ds, tokenizer, splits, run, store, identity, session_start)
 
 

@@ -3,7 +3,6 @@ import argparse
 import logging
 from pathlib import Path
 
-from mixed_data import prepare_dataset
 from orpheus_utils import atomic_json, read_json
 
 if __name__ == "__main__":
@@ -13,5 +12,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     cfg = read_json(args.config)
+    if cfg.get("stage2_dataset"):
+        from stage2_data import prepare_dataset
+    else:
+        from mixed_data import prepare_dataset
     root = prepare_dataset(cfg, Path(cfg["work_dir"]))
     atomic_json(args.result, dict(root=str(root)))
