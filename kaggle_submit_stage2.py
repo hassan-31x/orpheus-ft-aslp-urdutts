@@ -21,8 +21,10 @@ def main():
     p.add_argument("action", choices=["smoke", "full"])
     p.add_argument("--epoch", type=int, default=2)
     p.add_argument("--ref", help="40-character commit pushed to GitHub (default: local HEAD)")
-    p.add_argument("--session-hours", type=float, default=4.4, help="Stop-and-save budget; keep below remaining GPU quota")
+    p.add_argument("--session-hours", type=float, default=11.75, help="Stop-and-save budget: Kaggle's 12 h session limit minus a 15 min save margin")
     p.add_argument("--kernel", help="owner/slug to publish to (default: <you>/orpheus-urdu-stage2-<action>)")
+    p.add_argument("--token-dataset", help="Private Kaggle dataset (owner/slug) containing hf_token.txt; used when the HF_TOKEN secret "
+                   "cannot be read in API-started sessions")
     p.add_argument("--no-run", action="store_true")
     args = p.parse_args()
     from kaggle.api.kaggle_api_extended import KaggleApi
@@ -52,7 +54,7 @@ def main():
         raise SystemExit("Use a notebook owned by the authenticated Kaggle account")
     meta = dict(id=kernel, title=kernel.split("/")[1].replace("-", " "), code_file="kaggle_stage2.ipynb", language="python",
                 kernel_type="notebook", is_private=True, enable_gpu=True, enable_internet=True, enable_tpu=False,
-                dataset_sources=[], competition_sources=[], kernel_sources=[], model_sources=[])
+                dataset_sources=[args.token_dataset] if args.token_dataset else [], competition_sources=[], kernel_sources=[], model_sources=[])
     with tempfile.TemporaryDirectory(prefix="stage2-kaggle-") as d:
         (Path(d) / "kaggle_stage2.ipynb").write_text(json.dumps(notebook, ensure_ascii=False, indent=1))
         (Path(d) / "kernel-metadata.json").write_text(json.dumps(meta, indent=2))

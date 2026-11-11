@@ -78,6 +78,20 @@ Interrupted stage 2: rerun the same commit/config/run ID to restore its own full
 
 For the November 9 interrupted Arrow download, `kaggle_retry.ipynb` pins training code to `816474a` and mounts the failed full notebook's outputs. Its embedded `restore_screening_cache.py` can copy compatible ASLP WAVs/conversion records and quality caches into the new preparation directory. It permits only the recorded transport-only source change; data revisions, quality code/thresholds, packages, split seed and subset settings must match. It records both recipes and imported-file counts, leaves an already selected dataset untouched, and never imports optimizer state. The full retry still requires a passing smoke receipt for `816474a`.
 
+## Curated stage-2 epochs (`kaggle_stage2.ipynb`)
+
+Epochs 2, 3, 4, ... train on the curated dataset `hassan-31x/urdu-orpheus-stage2-data`; `stage2_plan.py` defines each epoch's run ID, seed, learning rate and parent run. Launch with `python kaggle_submit_stage2.py smoke --epoch N`, then `full --epoch N` (default budget 11.75 h: Kaggle's 12 h limit minus a save margin; an unfinished epoch resumes on any account with the same command).
+
+- **Epoch 2** used the v2 data (44.1 h, 30% ASLP) with plain-text prompts.
+- **From epoch 3**, the pinned `labels/v3.jsonl` caps acted ASLP dialogue (drama, comedy, film) at 7 h, preferring single-turn clips, which leaves 40.3 h of training data (24% ASLP). It also prefixes every prompt with a voice tag `speaker | gender | style | emotion: text`:
+  - **speaker:** `urdutts_narrator` for UrduTTS, or `aslp_<category>_<id>` (1,700 ASLP speakers).
+  - **gender:** `male` / `female` / `unknown`, from the ASLP annotation.
+  - **style:** `audiobook` or `conversational`.
+  - **emotion:** one of `neutral happy excited sad angry fearful surprised serious`, mapped from ASLP's free-text emotion notes by keyword.
+
+  For clean narration, prompt with `urdutts_narrator | unknown | audiobook | neutral`. To vary voice and emotion, swap in another speaker or emotion tag.
+- `eval_pronunciation.py` generates the benchmark prompts from several adapters with identical seeds and scores Whisper large-v3 CER/WER per adapter.
+
 ## Evaluation and validation
 
 Compare the completed UrduTTS parent and mixed adapter on identical unseen prompts/seeds. Use **[benchmark_prompts.csv](benchmark_prompts.csv)** for questions, casual responses, numbers and pronunciation contrasts. **[compare_adapters.py](compare_adapters.py)** generates paired samples sequentially. Source-specific validation losses are saved alongside aggregate loss. Blind native-listener ratings should assess intelligibility and conversational naturalness separately. ASR CER/WER are intelligibility proxies and must be calibrated on real Urdu references; loss and pitch variation alone do not establish naturalness.

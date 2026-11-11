@@ -39,7 +39,15 @@ class Stage2DataTest(unittest.TestCase):
         make_shard(self.shards / "train/train-00000-of-00002.parquet", "train", 0, 6)
         make_shard(self.shards / "train/train-00001-of-00002.parquet", "train", 6, 6)
         make_shard(self.shards / "validation/validation-00000-of-00001.parquet", "validation", 0, 4)
-        self.cfg = json.loads((Path(__file__).resolve().parents[1] / "configs/stage2.json").read_text())
+        (self.shards / "labels").mkdir()
+        with open(self.shards / "labels/v3.jsonl", "w", encoding="utf-8") as f:
+            for split, n in (("train", 12), ("validation", 4)):
+                for i in range(n):  # drop every 4th train clip; tag the rest
+                    f.write(json.dumps(dict(id=f"{split}-{i}", split=split, keep=not (split == "train" and i % 4 == 3),
+                                            voice=f"spk_{i} | female | conversational | happy")) + "\n")
+        base = json.loads((Path(__file__).resolve().parents[1] / "configs/stage2.json").read_text())
+        self.labelled = base
+        self.cfg = stage2_plan.epoch_config(2, base)  # plain-text prompts, v2 data
         self.cfg["work_dir"] = str(Path(self.tmp.name) / "work")
         os.environ["HF_TOKEN"] = "test"
 
@@ -51,7 +59,7 @@ class Stage2DataTest(unittest.TestCase):
                 pass
 
             def list_repo_files(self, *a, **k):
-                return [str(p.relative_to(shards)) for p in sorted(shards.rglob("*.parquet"))]
+                return [str(p.relative_to(shards)) for p in sorted(shards.rglob("*")) if p.is_file()]
 
         def download(repo, name, **k):
             return str(shards / name)
@@ -87,6 +95,27 @@ class Stage2DataTest(unittest.TestCase):
         self.assertEqual({r["source"] for r in rows["train"]}, {"aslp", "urdutts"})
         self.assertNotEqual(root, self.prepare(self.cfg))  # smoke and full runs never share a directory
 
+    def test_labels_filter_clips_and_add_voice_column(self):
+        cfg = dict(self.labelled, work_dir=self.cfg["work_dir"])
+        root = self.prepare(cfg)
+        report = json.loads((root / "dataset_source.json").read_text())
+        self.assertEqual(report["splits"]["train"]["clips"], 9)
+        self.assertEqual(report["splits"]["validation"]["clips"], 4)
+        self.assertEqual(report["recipe"]["labels"], "labels/v3.jsonl")
+        import csv
+        with open(root / "train.csv", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+        self.assertEqual(rows[0]["voice"], "spk_0 | female | conversational | happy")
+        self.assertNotIn("train-3", {Path(r["audio"]).stem for r in rows})
+        self.assertNotEqual(root, self.prepare(self.cfg))  # labelled and plain recipes never share a directory
+
+    def test_labels_and_voice_column_go_together(self):
+        with self.assertRaises(ValueError):
+            stage2_data.validate_config(dict(self.labelled, speaker_column=None))
+        with self.assertRaises(ValueError):
+            stage2_data.validate_config(dict(self.cfg, speaker_column="voice"))
+        stage2_data.validate_config(self.labelled)
+
     def test_rejects_unpinned_revision_and_mixture(self):
         with self.assertRaises(ValueError):
             stage2_data.validate_config(dict(self.cfg, dataset_revision="main"))
@@ -103,8 +132,10 @@ class Stage2DataTest(unittest.TestCase):
         self.assertIsNone(e3["init_source"])
         self.assertEqual(len({e2["seed"], e3["seed"], e4["seed"]}), 3)
         self.assertEqual(len({e2["run_id"], e3["run_id"], e4["run_id"]}), 3)
-        self.assertEqual(e2["dataset_revision"], e3["dataset_revision"])
-        self.assertEqual(base["run_id"], "stage2-r32-lr1e4-seed3407-epoch2")  # base untouched
+        self.assertEqual(e2["dataset_revision"], stage2_plan.EPOCH2_DATA["dataset_revision"])
+        self.assertEqual((e2["speaker_column"], e3["speaker_column"]), (None, "voice"))
+        self.assertEqual(e3["dataset_revision"], e4["dataset_revision"])
+        self.assertEqual(base["speaker_column"], "voice")  # base untouched
         with self.assertRaises(ValueError):
             stage2_plan.epoch_config(1, base)
 

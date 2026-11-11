@@ -13,8 +13,13 @@ from pathlib import Path
 
 BASE_SEED = 3407
 # Warm-restart cosine per epoch; later epochs step the peak LR down to consolidate rather than overwrite.
-LEARNING_RATES = {2: 1e-4, 3: 7e-5, 4: 5e-5, 5: 3e-5, 6: 2e-5}
+# Epoch 3 dropped from the planned 7e-5 to 5e-5: epoch 2 at 1e-4 pulled the voice away from clean reading.
+LEARNING_RATES = {2: 1e-4, 3: 5e-5, 4: 3e-5, 5: 2e-5, 6: 1e-5}
 FIRST_EPOCH = 2
+# Epoch 2 trained on the v2 data with plain-text prompts. From epoch 3, configs/stage2.json selects the v3
+# labels: prompts carry "speaker | gender | style | emotion" and acted ASLP dialogue is capped.
+EPOCH2_DATA = dict(dataset_revision="18f318476960bde581c6bfec713006c9e211c02a", stage2_labels=None,
+                   speaker_column=None, minimum_train_hours=40)
 
 
 def lr_tag(lr):
@@ -36,6 +41,7 @@ def epoch_config(epoch, base, learning_rate=None):
     cfg = json.loads(json.dumps(base))
     cfg.update(run_id=run_id(epoch, lr), learning_rate=lr, seed=BASE_SEED + epoch - FIRST_EPOCH)
     if epoch == FIRST_EPOCH:
+        cfg.update(EPOCH2_DATA)
         cfg["init_from_run"] = None
     else:
         previous = run_id(epoch - 1, LEARNING_RATES.get(epoch - 1))

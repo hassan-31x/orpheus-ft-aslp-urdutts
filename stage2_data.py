@@ -22,11 +22,14 @@ from pipeline_recovery import retry_io
 LOG = logging.getLogger("orpheus_urdu")
 RECIPE_VERSION = 1
 FIELDS = ("audio", "text", "source", "category")
+VOICE_COLUMN = "voice"  # "speaker | gender | style | emotion" prompt prefix from a pinned labels file
 
 
 def validate_config(cfg):
     from urdutts_data import validate_config as validate_tts
-    validate_tts(cfg)  # pinned 40-char dataset revision, owner/repo id, no manual manifests
+    validate_tts(dict(cfg, speaker_column=None))  # pinned 40-char dataset revision, owner/repo id, no manual manifests
+    if bool(cfg.get("stage2_labels")) != (cfg["speaker_column"] == VOICE_COLUMN):
+        raise ValueError(f"stage2_labels and speaker_column={VOICE_COLUMN!r} go together (tagged prompts need labels)")
     if cfg.get("mixture"):
         raise ValueError("stage2_dataset runs use the curated dataset, not the on-the-fly mixture")
     if any(cfg.get(k) is not None and cfg[k] < 2 for k in ("test_train_clips", "test_validation_clips")):
@@ -43,16 +46,36 @@ def recipe_for(cfg):
     subset = None
     if cfg.get("test_train_clips") or cfg.get("test_validation_clips"):
         subset = dict(train=cfg.get("test_train_clips"), validation=cfg.get("test_validation_clips"))
-    return dict(version=RECIPE_VERSION, dataset_id=cfg["dataset_id"], revision=cfg["dataset_revision"],
-                audio="flac-24000-mono-pcm16", subset=subset)
+    recipe = dict(version=RECIPE_VERSION, dataset_id=cfg["dataset_id"], revision=cfg["dataset_revision"],
+                  audio="flac-24000-mono-pcm16", subset=subset)
+    if cfg.get("stage2_labels"):
+        recipe["labels"] = cfg["stage2_labels"]  # older runs keep their recipe identity unchanged
+    return recipe
+
+
+def load_labels(cfg, token):
+    """id -> (keep, voice) from the labels file pinned at the same dataset revision."""
+    import json
+    from huggingface_hub import hf_hub_download
+    path = retry_io(lambda: hf_hub_download(cfg["dataset_id"], cfg["stage2_labels"], repo_type="dataset",
+                                           revision=cfg["dataset_revision"], token=token), attempts=5)
+    labels = {}
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            r = json.loads(line)
+            if not r["voice"].strip():
+                raise RuntimeError(f"Empty voice tag for {r['id']}")
+            labels[r["id"]] = (r["keep"], r["voice"].strip())
+    return labels
 
 
 def write_manifest(path, rows):
+    fields = FIELDS + ((VOICE_COLUMN,) if rows and VOICE_COLUMN in rows[0] else ())
     temp = path.with_suffix(".tmp.csv")
     with temp.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDS)
+        writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
-        writer.writerows({k: row[k] for k in FIELDS} for row in rows)
+        writer.writerows({k: row[k] for k in fields} for row in rows)
     temp.replace(path)
 
 
@@ -64,7 +87,7 @@ def _shards(api, cfg, split):
     return names
 
 
-def _materialise(cfg, root, split, files, limit, token, scratch):
+def _materialise(cfg, root, split, files, limit, token, scratch, labels=None):
     """Write one split's FLAC files and return its manifest rows (atomic per file; safe to repeat)."""
     import pyarrow.parquet as pq
     from huggingface_hub import hf_hub_download
@@ -79,6 +102,11 @@ def _materialise(cfg, root, split, files, limit, token, scratch):
                 for row in batch.to_pylist():
                     if limit and len(rows) >= limit:
                         break
+                    if labels is not None:
+                        if row["id"] not in labels:
+                            raise RuntimeError(f"Clip {row['id']} has no label; labels and dataset revision disagree")
+                        if not labels[row["id"]][0]:
+                            continue
                     if row.get("error") or not row["audio"]["bytes"]:
                         raise RuntimeError(f"Curated dataset row {row['id']} is unusable; rebuild the dataset")
                     relative = f"audio/{split}/{row['id']}.flac"
@@ -89,7 +117,8 @@ def _materialise(cfg, root, split, files, limit, token, scratch):
                         temp.write_bytes(row["audio"]["bytes"])
                         temp.replace(target)
                     rows.append(dict(audio=relative, text=row["text"], source=row["source"],
-                                     category=row["category"], duration=row["duration"], id=row["id"]))
+                                     category=row["category"], duration=row["duration"], id=row["id"],
+                                     **({VOICE_COLUMN: labels[row["id"]][1]} if labels is not None else {})))
                     seconds += row["duration"]
                 if limit and len(rows) >= limit:
                     break
@@ -121,6 +150,7 @@ def prepare_dataset(cfg, work):
     scratch = Path(work) / "source_shards"
     scratch.mkdir(parents=True, exist_ok=True)
     selected, splits = {}, {}
+    labels = load_labels(cfg, token) if cfg.get("stage2_labels") else None
     for split in ("train", "validation"):
         limit = None
         if recipe["subset"]:
@@ -128,7 +158,7 @@ def prepare_dataset(cfg, work):
             limit = max(40, 4 * (recipe["subset"][split] or 10))
         files = _shards(api, cfg, split)
         files = files[:1] if limit else files
-        rows = _materialise(cfg, root, split, files, limit, token, scratch)
+        rows = _materialise(cfg, root, split, files, limit, token, scratch, labels)
         if not rows:
             raise RuntimeError(f"No {split} rows materialised")
         write_manifest(root / f"{split}.csv", rows)

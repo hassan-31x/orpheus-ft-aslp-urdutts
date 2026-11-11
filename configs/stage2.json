@@ -1,5 +1,5 @@
 {
-  "run_id": "stage2-r32-lr1e4-seed3407-epoch2",
+  "run_id": "stage2-r32-lr5e5-seed3408-epoch3",
   "model_id": "unsloth/orpheus-3b-0.1-pretrained",
   "model_revision": "4ff34a809af9d39dc4e023edb2d3bb2a60919411",
   "codec_revision": "d73ad176a12188fcf4f360ba3bf2c2fbbe8f58ec",
@@ -11,7 +11,7 @@
   "train_manifest": null,
   "validation_manifest": null,
   "test_manifest": null,
-  "speaker_column": null,
+  "speaker_column": "voice",
   "precision": "4bit",
   "max_length": 2048,
   "epochs": 1,
@@ -42,8 +42,8 @@
   "sample_repetition_penalty": 1.1,
   "sample_at_start": false,
   "sample_max_seconds": 240,
-  "session_hours": 4.4,
-  "minimum_train_hours": 40,
+  "session_hours": 11.75,
+  "minimum_train_hours": 38,
   "maximum_clip_seconds": 20,
   "invalid_row_policy": "skip",
   "maximum_rejected_train_fraction": 0.05,
@@ -53,7 +53,7 @@
   "test_validation_clips": null,
   "init_from_run": null,
   "dataset_id": "hassan-31x/urdu-orpheus-stage2-data",
-  "dataset_revision": "18f318476960bde581c6bfec713006c9e211c02a",
+  "dataset_revision": "feda4a51ead6a93511759aa7b7ff8d8f7833173c",
   "dataset_text_column": "transcription",
   "dataset_include_test": false,
   "init_source": {
@@ -63,5 +63,6 @@
     "checkpoint": "checkpoint-5029"
   },
   "mixture": null,
-  "stage2_dataset": true
+  "stage2_dataset": true,
+  "stage2_labels": "labels/v3.jsonl"
 }
