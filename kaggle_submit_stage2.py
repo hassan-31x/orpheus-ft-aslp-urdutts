@@ -3,6 +3,7 @@
   python kaggle_submit_stage2.py smoke                 # epoch-2 few-clip test
   python kaggle_submit_stage2.py full --epoch 2        # full epoch 2 (or resume it on another account)
   python kaggle_submit_stage2.py full --epoch 3        # next epochs: same command, new --epoch
+  python kaggle_submit_stage2.py eval --eval-name NAME --adapter label=repo:run_id:checkpoint ...
 
 The commit pinned inside the notebook is --ref (default: this checkout's HEAD, which must be pushed).
 Keep --ref identical for all epochs and accounts. The account needs the HF_TOKEN Kaggle secret enabled
@@ -18,7 +19,9 @@ from pathlib import Path
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("action", choices=["smoke", "full"])
+    p.add_argument("action", choices=["smoke", "full", "eval"])
+    p.add_argument("--adapter", action="append", default=[], help="eval: label=repo:run_id:checkpoint (repeatable)")
+    p.add_argument("--eval-name", help="eval: results folder under evaluations/")
     p.add_argument("--epoch", type=int, default=2)
     p.add_argument("--ref", help="40-character commit pushed to GitHub (default: local HEAD)")
     p.add_argument("--session-hours", type=float, default=11.75, help="Stop-and-save budget: Kaggle's 12 h session limit minus a 15 min save margin")
@@ -36,9 +39,15 @@ def main():
     pushed = subprocess.run(["git", "branch", "-r", "--contains", ref], cwd=repo, capture_output=True, text=True).stdout
     if not pushed.strip():
         raise SystemExit(f"Commit {ref} is not on a pushed remote branch; push it first (Kaggle clones from GitHub)")
-    notebook = json.loads((repo / "kaggle_stage2.ipynb").read_text())
+    source = "kaggle_eval_pron.ipynb" if args.action == "eval" else "kaggle_stage2.ipynb"
+    notebook = json.loads((repo / source).read_text())
     replacements = {"REPO_REF = ": f'REPO_REF = "{ref}"', "EPOCH = ": f"EPOCH = {args.epoch}",
                     "TEST = ": f"TEST = {args.action == 'smoke'}", "SESSION_HOURS = ": f"SESSION_HOURS = {args.session_hours}"}
+    if args.action == "eval":
+        if not args.adapter or not args.eval_name:
+            raise SystemExit("eval needs --eval-name and at least one --adapter")
+        replacements.update({"EVAL_NAME = ": f"EVAL_NAME = {json.dumps(args.eval_name)}",
+                             "ADAPTERS = ": f"ADAPTERS = {json.dumps(args.adapter)}"})
     for cell in notebook["cells"]:
         if cell["cell_type"] != "code":
             continue
@@ -56,7 +65,7 @@ def main():
                 kernel_type="notebook", is_private=True, enable_gpu=True, enable_internet=True, enable_tpu=False,
                 dataset_sources=[args.token_dataset] if args.token_dataset else [], competition_sources=[], kernel_sources=[], model_sources=[])
     with tempfile.TemporaryDirectory(prefix="stage2-kaggle-") as d:
-        (Path(d) / "kaggle_stage2.ipynb").write_text(json.dumps(notebook, ensure_ascii=False, indent=1))
+        (Path(d) / "kaggle_stage2.ipynb").write_text(json.dumps(notebook, ensure_ascii=False, indent=1))  # code_file name
         (Path(d) / "kernel-metadata.json").write_text(json.dumps(meta, indent=2))
         cmd = ["kaggle", "kernels", "push", "-p", d, "--accelerator", "NvidiaTeslaT4"] + (["--no-run"] if args.no_run else [])
         subprocess.run(cmd, check=True)
