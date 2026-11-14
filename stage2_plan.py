@@ -16,6 +16,8 @@ BASE_SEED = 3407
 # Epoch 3 dropped from the planned 7e-5 to 5e-5: epoch 2 at 1e-4 pulled the voice away from clean reading.
 LEARNING_RATES = {2: 1e-4, 3: 5e-5, 4: 3e-5, 5: 2e-5, 6: 1e-5}
 FIRST_EPOCH = 2
+# Every checkpoint is ~2.4 GiB on the Hub (private storage is capped), so from epoch 4 save every 500 steps.
+SAVE_STEPS_FROM_EPOCH4 = 500
 # Epoch 2 trained on the v2 data with plain-text prompts. From epoch 3, configs/stage2.json selects the v3
 # labels: prompts carry "speaker | gender | style | emotion" and acted ASLP dialogue is capped.
 EPOCH2_DATA = dict(dataset_revision="18f318476960bde581c6bfec713006c9e211c02a", stage2_labels=None,
@@ -47,6 +49,8 @@ def epoch_config(epoch, base, learning_rate=None):
         previous = run_id(epoch - 1, LEARNING_RATES.get(epoch - 1))
         cfg["init_from_run"] = previous
         cfg["init_source"] = None
+        if epoch >= 4:
+            cfg["save_steps"] = SAVE_STEPS_FROM_EPOCH4
     return cfg
 
 
