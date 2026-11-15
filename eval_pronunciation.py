@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -62,6 +63,7 @@ def fetch_adapter(spec, root, token=None):
     for base, name in complete[0].items():
         source = hf_hub_download(repo, name, token=token)
         (target / base).write_bytes(Path(source).read_bytes())
+        Path(source).resolve().unlink(missing_ok=True)  # drop the Hub-cache copy too; adapters are not reused
     return label, target
 
 
@@ -78,12 +80,15 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     with args.prompts.open(encoding="utf-8-sig") as f:
         texts = [r["text"] for r in csv.DictReader(f)]
-    adapters = [fetch_adapter(spec, args.output / "adapters") for spec in args.adapter]
+    adapters = [(spec.split("=", 1)[0], None) for spec in args.adapter]
 
-    for label, adapter in adapters:
+    for spec in args.adapter:
+        label = spec.split("=", 1)[0]
         out = args.output / "audio" / label
         if (out / "generated.csv").is_file() and len(list(out.glob("utterance-*.json"))) == len(texts) * args.repeats:
             continue  # resumable: this adapter is already generated
+        # One adapter at a time: each is ~2 GB, and eleven together overflow Kaggle's 20 GB working disk.
+        label, adapter = fetch_adapter(spec, args.output / "adapters")
         tagged = bool(read_json(adapter / "run_identity.json")["config"].get("speaker_column"))
         manifest = args.output / f"prompts-{label}.csv"
         with manifest.open("w", newline="", encoding="utf-8") as f:
@@ -93,6 +98,7 @@ def main():
                 w.writerows(dict(text=t, speaker=args.voice if tagged else "") for t in texts)
         subprocess.run([sys.executable, str(repo / "synthesize.py"), "--adapter", str(adapter),
                         "--manifest", str(manifest), "--output", str(out), "--seed", "3407"], check=True, cwd=repo)
+        shutil.rmtree(adapter)
 
     # ASR after all generation, so Orpheus and Whisper never share the GPU.
     import numpy as np
