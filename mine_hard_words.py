@@ -123,11 +123,11 @@ def select(rows, count, seed):
 
 def generate(state, probes, adapter_spec, seeds, batch_size, deadline, cfg):
     """Batched sampling with the same decoding settings as every earlier evaluation."""
+    from unsloth import FastLanguageModel  # must precede torch/transformers (Unsloth patches them)
     import torch
     import soundfile as sf
     from peft import PeftModel
     from snac import SNAC
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
     from eval_pronunciation import fetch_adapter
     pending = [(s, p) for s in range(seeds) for p in probes
                if not (state.root / f"synth/seed{s}/{p['id']}.flac").is_file()]
@@ -135,14 +135,14 @@ def generate(state, probes, adapter_spec, seeds, batch_size, deadline, cfg):
         return True
     _, adapter = fetch_adapter("adapter=" + adapter_spec, state.root)
     tagged = bool(read_json(adapter / "run_identity.json")["config"].get("speaker_column"))
-    tokenizer = AutoTokenizer.from_pretrained(cfg["model_id"], revision=cfg["model_revision"])
-    # Same 4-bit NF4 base the adapter was trained on (Unsloth load_in_4bit), fp16 compute on a T4.
-    quant = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True,
-                               bnb_4bit_compute_dtype=torch.float16)
-    model = AutoModelForCausalLM.from_pretrained(cfg["model_id"], revision=cfg["model_revision"],
-                                                 quantization_config=quant, torch_dtype=torch.float16,
-                                                 device_map={"": 0})
-    model = PeftModel.from_pretrained(model, str(adapter), is_trainable=False).eval()
+    # Load exactly as synthesize.py and training do: Unsloth resizes the embeddings to 156,940 rows, which
+    # a plain Transformers load (156,939) cannot take the adapter's embedding/head weights into.
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=cfg["model_id"], revision=cfg["model_revision"], use_exact_model_name=True,
+        max_seq_length=cfg["max_length"], dtype=None, load_in_4bit=cfg["precision"] == "4bit")
+    model = PeftModel.from_pretrained(model, str(adapter), is_trainable=False)
+    FastLanguageModel.for_inference(model)
+    model.eval()
     codec = SNAC.from_pretrained(CODEC_ID, revision=cfg["codec_revision"]).eval().cuda()
     # Similar lengths share a batch, so short sentences do not wait for long ones.
     pending.sort(key=lambda item: (item[0], item[1]["duration"]))
