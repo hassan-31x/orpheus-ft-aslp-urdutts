@@ -110,5 +110,6 @@
     ]
   },
   "stage2_dataset": false,
-  "stage2_labels": null
+  "stage2_labels": null,
+  "loss_weighting": null
 }

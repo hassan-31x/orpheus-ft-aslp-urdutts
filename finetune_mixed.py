@@ -109,6 +109,11 @@ def cli():
         p.error("maximum_rejected_train_fraction must be in [0, 1)")
     if cfg["optimizer"] not in ("adamw_torch", "adamw_8bit"):
         p.error("optimizer must be adamw_torch or adamw_8bit")
+    try:
+        from weighted_loss import validate as validate_weighting
+        validate_weighting(cfg.get("loss_weighting"))
+    except ValueError as exc:
+        p.error(str(exc))
     if cfg.get("stage2_dataset"):
         from stage2_data import validate_config
     else:
@@ -690,8 +695,23 @@ def train(cfg, ds, tokenizer, splits, run, store, identity, session_start):
         ds["train"] = ds["train"].select(order)
         atomic_json(run / "curriculum.json", dict(stages=stages, order=ds["train"]["audio"],
                                                   composition=source_summary(curriculum_rows)))
+    weighting = None
+    if cfg.get("loss_weighting"):
+        from weighted_loss import Weighting, load as load_weighting
+        set_activity("preparing pronunciation loss weights")
+        mined = retry_io(lambda: load_weighting(cfg["loss_weighting"], os.environ.get("HF_TOKEN")))
+        sources = {Path(r["audio"]).stem: r.get("source") for r in splits["train"]}
+        weighting = Weighting(cfg["loss_weighting"], mined, sources)
+        order, oversampling = weighting.oversample_order(ds["train"]["audio"], cfg["seed"])
+        ds["train"] = ds["train"].select(order)
+        scale = weighting.calibrate(ds["train"])
+        atomic_json(run / "loss_weighting.json", dict(spec=cfg["loss_weighting"], oversampling=oversampling,
+                                                      raw_mean_weight=scale, hard_words=len(mined.get("hard_words", {})),
+                                                      clips_with_spans=len(weighting.spans)))
+        LOG.info("Loss weighting: %s; raw mean weight %.4f normalised to 1", oversampling, scale)
     upload_files(store, [(run / name, "preparation/" + name) for name in
-                         ("training_selection.json", "dataset_report.json", "effective_training_manifests.json")])
+                         ("training_selection.json", "dataset_report.json", "effective_training_manifests.json",
+                          "loss_weighting.json") if (run / name).is_file()])
     LOG.info("Model backward preflight passed; training rows=%d, optimizer=%s", len(ds["train"]), cfg["optimizer"])
 
     eval_ds = ds["validation"]
@@ -851,7 +871,33 @@ def train(cfg, ds, tokenizer, splits, run, store, identity, session_start):
         ignore_data_skip=False, disable_tqdm=True, label_names=["labels"],
         load_best_model_at_end=False)
     monitor = Monitor()
+
+    def train_collate(examples):
+        batch = collate(examples)
+        if weighting is not None:
+            width = batch["labels"].shape[1]
+            batch["loss_weights"] = torch.tensor([w + [0.0]*(width-len(w)) for w in map(weighting, examples)],
+                                                 dtype=torch.float32)
+        return batch
+
     class ResilientTrainer(Trainer):
+        def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+            weights = inputs.pop("loss_weights", None)
+            if weights is None or not model.training:
+                return super().compute_loss(model, inputs, return_outputs=return_outputs,
+                                            num_items_in_batch=num_items_in_batch)
+            from weighted_loss import weighted_causal_loss
+            total, count = weighted_causal_loss(model, inputs["input_ids"], inputs["attention_mask"],
+                                                inputs["labels"], weights,
+                                                cfg["loss_weighting"].get("chunk_tokens", 512))
+            # Same normalisation as the Trainer's built-in loss: by all label tokens in the accumulated
+            # batch when the Trainer supplies that count, else per micro-batch (Trainer divides by accumulation).
+            if self.model_accepts_loss_kwargs and num_items_in_batch is not None:
+                loss = total / num_items_in_batch
+            else:
+                loss = total / count.clamp(min=1)
+            return (loss, None) if return_outputs else loss
+
         def _get_train_sampler(self, train_dataset=None):
             if cfg.get("mixture"):
                 from torch.utils.data import SequentialSampler
@@ -884,7 +930,7 @@ def train(cfg, ds, tokenizer, splits, run, store, identity, session_start):
                                        run, self.state.global_step, cleanup)
 
     trainer = ResilientTrainer(model=model, args=arguments, train_dataset=ds["train"],
-                      eval_dataset=eval_ds, data_collator=collate,
+                      eval_dataset=eval_ds, data_collator=train_collate,
                       processing_class=tokenizer, callbacks=[monitor])
     previous = latest_checkpoint(run)
     LOG.info("Resuming: %s; effective batch=%d; train clips=%d", previous,
@@ -1073,7 +1119,8 @@ def main():
                             initialization=read_json(run/"init_source.json") if (run/"init_source.json").is_file() else None,
                             packages=env["packages"], torch=env["torch"],
                             source_sha256={name: sha256(Path(__file__).parent / name) for name in
-                                           ("finetune_mixed.py", "urdutts_data.py", "mixed_data.py", "stage2_data.py", "quality.py", "mixture.py", "checkpoint_init.py", "prepare_mixture.py", "audio_storage.py", "orpheus_utils.py", "synthesize.py", "pipeline_recovery.py")})
+                                           ("finetune_mixed.py", "urdutts_data.py", "mixed_data.py", "stage2_data.py", "quality.py", "mixture.py", "checkpoint_init.py", "prepare_mixture.py", "audio_storage.py", "orpheus_utils.py", "synthesize.py", "pipeline_recovery.py",
+                                            "weighted_loss.py", "pron_words.py")})
             identity_path = run / "run_identity.json"
             reconcile_run_identity(run, identity)
             atomic_json(run / "environment.json", env)

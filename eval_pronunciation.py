@@ -20,9 +20,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import re
-
-from orpheus_utils import atomic_json, clean_text, read_json
+from orpheus_utils import atomic_json, read_json
+from pron_words import matched_words, normalize
 
 DEFAULT_VOICE = "urdutts_narrator | unknown | audiobook | neutral"
 
@@ -37,9 +36,28 @@ def distance(a, b):
     return previous[-1]
 
 
-def normalize(text):
-    # Same scoring policy as the ASLP report: NFC, no punctuation, collapsed spaces; CER counts spaces.
-    return clean_text(re.sub(r"[^\w\s]", "", clean_text(text)))
+def summarize(per, repeats):
+    """Accuracy plus seed consistency; per is ordered repeat-major (all prompts, then all again)."""
+    cers = sorted(r["cer"] for r in per)
+    n = len(per) // repeats
+    groups = [[per[k * n + i] for k in range(repeats)] for i in range(n)]
+    both = total = 0
+    gaps = []
+    for g in groups:
+        ref = g[0]["reference_normalized"].split()
+        ok = [matched_words(ref, r["hypothesis_normalized"].split()) for r in g]
+        both += sum(all(o[k] for o in ok) for k in range(len(ref)))
+        total += len(ref)
+        gaps.append(max(r["cer"] for r in g) - min(r["cer"] for r in g))
+    return dict(samples=len(per),
+                corpus_cer=sum(r["char_errors"] for r in per) / sum(r["ref_chars"] for r in per),
+                corpus_wer=sum(r["word_errors"] for r in per) / sum(r["ref_words"] for r in per),
+                median_cer=cers[len(cers) // 2],
+                samples_cer_under_20pct=sum(c < 0.2 for c in cers) / len(cers),
+                words_correct_in_every_seed=both / max(1, total),
+                mean_seed_cer_gap=sum(gaps) / max(1, len(gaps)),
+                stopped_cleanly=sum(bool(r["stopped"]) for r in per) / len(per),
+                mean_seconds=sum(r["seconds"] for r in per) / len(per))
 
 
 def fetch_adapter(spec, root, token=None):
@@ -79,7 +97,9 @@ def main():
     repo = Path(__file__).resolve().parent
     args.output.mkdir(parents=True, exist_ok=True)
     with args.prompts.open(encoding="utf-8-sig") as f:
-        texts = [r["text"] for r in csv.DictReader(f)]
+        prompt_rows = list(csv.DictReader(f))
+    texts = [r["text"] for r in prompt_rows]
+    sets = [r.get("set") or "all" for r in prompt_rows]
     adapters = [(spec.split("=", 1)[0], None) for spec in args.adapter]
 
     for spec in args.adapter:
@@ -122,6 +142,7 @@ def main():
             meta = read_json((out / row["audio"]).with_suffix(".json"))
             ref, h = normalize(row["text"]), normalize(hyp)
             rec = dict(adapter=label, audio=row["audio"], reference=row["text"], hypothesis=hyp,
+                       prompt_set=sets[len(per) % len(texts)], reference_normalized=ref, hypothesis_normalized=h,
                        char_errors=distance(ref, h), ref_chars=len(ref),
                        word_errors=distance(ref.split(), h.split()), ref_words=len(ref.split()),
                        seconds=meta["duration_seconds"], stopped=meta.get("ended_with_speech_stop"),
@@ -129,14 +150,11 @@ def main():
             rec.update(cer=rec["char_errors"] / rec["ref_chars"], wer=rec["word_errors"] / rec["ref_words"])
             per.append(rec)
         records += per
-        cers = sorted(r["cer"] for r in per)
-        summary[label] = dict(samples=len(per),
-                              corpus_cer=sum(r["char_errors"] for r in per) / sum(r["ref_chars"] for r in per),
-                              corpus_wer=sum(r["word_errors"] for r in per) / sum(r["ref_words"] for r in per),
-                              median_cer=cers[len(cers) // 2],
-                              samples_cer_under_20pct=sum(c < 0.2 for c in cers) / len(cers),
-                              stopped_cleanly=sum(bool(r["stopped"]) for r in per) / len(per),
-                              mean_seconds=sum(r["seconds"] for r in per) / len(per))
+        summary[label] = summarize(per, args.repeats)
+        if len(set(sets)) > 1:
+            n = len(texts)
+            summary[label]["by_set"] = {name: summarize([r for i, r in enumerate(per) if sets[i % n] == name], args.repeats)
+                                        for name in sorted(set(sets))}
         print(label, json.dumps(summary[label]), flush=True)
     atomic_json(args.output / "per_utterance.json", records)
     atomic_json(args.output / "summary.json", dict(asr_model=args.asr_model, prompts=len(texts),

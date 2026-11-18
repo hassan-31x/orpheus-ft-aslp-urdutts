@@ -20,6 +20,11 @@ FIRST_EPOCH = 2
 SAVE_STEPS_FROM_EPOCH4 = 500
 # Epoch 2 trained on the v2 data with plain-text prompts. From epoch 3, configs/stage2.json selects the v3
 # labels: prompts carry "speaker | gender | style | emotion" and acted ASLP dialogue is capped.
+# From epoch 5 the loss focuses on pronunciation (weighted_loss.py): hard words mined from the epoch-4
+# checkpoint (mine_hard_words.py) are up-weighted in UrduTTS clips; ASLP coarse tokens are down-weighted.
+# Pinned after the mining run publishes loss_weights.json; epoch 5 refuses to start until it is set.
+LOSS_WEIGHTING_FROM_EPOCH = 5
+LOSS_WEIGHTING = None  # dict(repo_id=..., path="mining/v1/loss_weights.json", revision=<40-char commit>)
 EPOCH2_DATA = dict(dataset_revision="18f318476960bde581c6bfec713006c9e211c02a", stage2_labels=None,
                    speaker_column=None, minimum_train_hours=40)
 
@@ -51,6 +56,11 @@ def epoch_config(epoch, base, learning_rate=None):
         cfg["init_source"] = None
         if epoch >= 4:
             cfg["save_steps"] = SAVE_STEPS_FROM_EPOCH4
+        if epoch >= LOSS_WEIGHTING_FROM_EPOCH:
+            if not LOSS_WEIGHTING:
+                raise ValueError(f"Epoch {epoch} trains with pronunciation loss weights: run mine_hard_words.py and "
+                                 "pin LOSS_WEIGHTING in stage2_plan.py first")
+            cfg["loss_weighting"] = dict(LOSS_WEIGHTING)
     return cfg
 
 

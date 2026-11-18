@@ -4,6 +4,7 @@
   python kaggle_submit_stage2.py full --epoch 2        # full epoch 2 (or resume it on another account)
   python kaggle_submit_stage2.py full --epoch 3        # next epochs: same command, new --epoch
   python kaggle_submit_stage2.py eval --eval-name NAME --adapter label=repo:run_id:checkpoint ...
+  python kaggle_submit_stage2.py mine --mine-name v1 --adapter label=repo:run_id:checkpoint   # hard-word mining
   python kaggle_submit_stage2.py listen --adapter "display label=repo:run_id:checkpoint" ...   # audio players in the notebook
 
 The commit pinned inside the notebook is --ref (default: this checkout's HEAD, which must be pushed).
@@ -20,9 +21,10 @@ from pathlib import Path
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("action", choices=["smoke", "full", "eval", "listen"])
+    p.add_argument("action", choices=["smoke", "full", "eval", "listen", "mine"])
     p.add_argument("--adapter", action="append", default=[], help="eval/listen: label=repo:run_id:checkpoint (repeatable)")
     p.add_argument("--eval-name", help="eval: results folder under evaluations/")
+    p.add_argument("--mine-name", help="mine: state/results folder under mining/")
     p.add_argument("--epoch", type=int, default=2)
     p.add_argument("--ref", help="40-character commit pushed to GitHub (default: local HEAD)")
     p.add_argument("--session-hours", type=float, default=11.75, help="Stop-and-save budget: Kaggle's 12 h session limit minus a 15 min save margin")
@@ -40,10 +42,15 @@ def main():
     pushed = subprocess.run(["git", "branch", "-r", "--contains", ref], cwd=repo, capture_output=True, text=True).stdout
     if not pushed.strip():
         raise SystemExit(f"Commit {ref} is not on a pushed remote branch; push it first (Kaggle clones from GitHub)")
-    source = {"eval": "kaggle_eval_pron.ipynb", "listen": "kaggle_listen.ipynb"}.get(args.action, "kaggle_stage2.ipynb")
+    source = {"eval": "kaggle_eval_pron.ipynb", "listen": "kaggle_listen.ipynb", "mine": "kaggle_mine.ipynb"}.get(args.action, "kaggle_stage2.ipynb")
     notebook = json.loads((repo / source).read_text())
     replacements = {"REPO_REF = ": f'REPO_REF = "{ref}"', "EPOCH = ": f"EPOCH = {args.epoch}",
                     "TEST = ": f"TEST = {args.action == 'smoke'}", "SESSION_HOURS = ": f"SESSION_HOURS = {args.session_hours}"}
+    if args.action == "mine":
+        if len(args.adapter) != 1 or not args.mine_name:
+            raise SystemExit("mine needs --mine-name and exactly one --adapter")
+        replacements["ADAPTERS = "] = f"ADAPTERS = {json.dumps(args.adapter, ensure_ascii=False)}"
+        replacements["MINE_NAME = "] = f"MINE_NAME = {json.dumps(args.mine_name)}"
     if args.action in ("eval", "listen"):
         if not args.adapter or (args.action == "eval" and not args.eval_name):
             raise SystemExit("eval needs --eval-name and at least one --adapter; listen needs at least one --adapter")
