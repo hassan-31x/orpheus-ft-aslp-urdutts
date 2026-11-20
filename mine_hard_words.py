@@ -200,7 +200,7 @@ def generate(state, probes, adapter_spec, seeds, batch_size, deadline, cfg):
     return finished
 
 
-def transcribe(state, jobs, deadline, batch_size=16):
+def transcribe(state, jobs, deadline, batch_size=8):
     """jobs: [(key, path)] -> appends {"key", "text"} lines to asr.jsonl (resumable)."""
     import numpy as np
     import soundfile as sf
@@ -229,7 +229,17 @@ def transcribe(state, jobs, deadline, batch_size=16):
                 signal = signal.mean(axis=1)
             d = gcd(sr, 16000)
             inputs.append(dict(raw=resample_poly(signal, 16000 // d, sr // d).astype(np.float32), sampling_rate=16000))
-        results = asr(inputs, batch_size=batch_size, generate_kwargs=dict(language="urdu", task="transcribe"))
+        while True:  # Whisper's default 5-beam search x batch needs ~14 GB on a T4; greedy + halving on OOM
+            try:
+                results = asr(inputs, batch_size=batch_size,
+                              generate_kwargs=dict(language="urdu", task="transcribe", num_beams=1))
+                break
+            except torch.OutOfMemoryError:
+                torch.cuda.empty_cache()
+                if batch_size == 1:
+                    raise
+                batch_size //= 2
+                LOG.warning("Whisper out of memory; batch size now %d", batch_size)
         with out.open("a", encoding="utf-8") as f:
             for (key, _), r in zip(chunk, results):
                 f.write(json.dumps(dict(key=key, text=r["text"]), ensure_ascii=False) + "\n")
