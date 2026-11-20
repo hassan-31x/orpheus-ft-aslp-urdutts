@@ -31,6 +31,10 @@ from pathlib import Path
 from orpheus_utils import CODEC_ID, SPECIAL, atomic_json, decode_frames, prompt_ids, read_json
 from pron_words import ctc_align, normalize, score_words, word_spans, words
 
+# The Xet token endpoint counts against the Hub's 1000 API requests / 5 min quota; with thousands of
+# small clips every download needs one, so fetch through the plain resolve route instead.
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+
 LOG = logging.getLogger("mine")
 WHISPER = "openai/whisper-large-v3"
 MMS = "facebook/mms-1b-all"
@@ -50,12 +54,21 @@ class State:
 
     def pull(self):
         from huggingface_hub import snapshot_download
+        from huggingface_hub.errors import HfHubHTTPError
         names = [f for f in self.api.list_repo_files(self.repo) if f.startswith(self.prefix + "/")]
         if not names:
             return
         with_cache = self.root.parent / ".pull-cache"
-        snapshot_download(self.repo, allow_patterns=[self.prefix + "/*", self.prefix + "/**"], local_dir=with_cache,
-                          token=self.token)
+        for attempt in range(1, 31):  # resumes: files already downloaded are skipped on each retry
+            try:
+                snapshot_download(self.repo, allow_patterns=[self.prefix + "/*", self.prefix + "/**"],
+                                  local_dir=with_cache, token=self.token, max_workers=8)
+                break
+            except HfHubHTTPError as exc:
+                if exc.response is None or exc.response.status_code != 429 or attempt == 30:
+                    raise
+                LOG.warning("Hub rate limit while resuming (attempt %d); waiting 5 minutes", attempt)
+                time.sleep(300)
         source = with_cache / self.prefix
         for path in source.rglob("*"):
             if path.is_file():
