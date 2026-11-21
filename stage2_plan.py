@@ -24,7 +24,9 @@ SAVE_STEPS_FROM_EPOCH4 = 500
 # checkpoint (mine_hard_words.py) are up-weighted in UrduTTS clips; ASLP coarse tokens are down-weighted.
 # Pinned after the mining run publishes loss_weights.json; epoch 5 refuses to start until it is set.
 LOSS_WEIGHTING_FROM_EPOCH = 5
-LOSS_WEIGHTING = None  # dict(repo_id=..., path="mining/v1/loss_weights.json", revision=<40-char commit>)
+# Hard words mined from the epoch-4 final checkpoint (1,168 words, 12,851 UrduTTS clips with aligned spans).
+LOSS_WEIGHTING = dict(repo_id="hassan-31x/orpheus-urdu-stage2-checkpoints", path="mining/v1/loss_weights.json",
+                      revision="f3e9fee0f656ee9b66fd03b34481aefb6f7c94e6")
 EPOCH2_DATA = dict(dataset_revision="18f318476960bde581c6bfec713006c9e211c02a", stage2_labels=None,
                    speaker_column=None, minimum_train_hours=40)
 
