@@ -420,7 +420,14 @@ def main():
             return LOG.warning("Session budget reached during ASR; rerun the same command to continue")
         free_model(WHISPER)
         state.mark("asr", transcripts=len(jobs))
-    options = dict(min_trials=2, min_error_rate=0.25, scale=2.0, cap=3.0)
+    # Shrunk toward the corpus error rate (~18%): one wrong seed in two trials is not yet evidence.
+    options = dict(min_trials=2, min_error_rate=0.30, scale=2.0, cap=3.0, prior_strength=4.0)
+    scored = state.root / "score.json"
+    if state.done("score") and read_json(scored)["options"] != options:
+        LOG.info("Scoring options changed; rescoring and realigning")
+        for stage in ("score", "align", "publish"):
+            (state.root / f"{stage}.done").unlink(missing_ok=True)
+        (state.root / "align.jsonl").unlink(missing_ok=True)
     if not state.done("score"):
         score(state, probes, rows, args.seeds, options)
         state.mark("score")

@@ -43,6 +43,13 @@ class WordScoringTest(unittest.TestCase):
         self.assertEqual(word_weight(8, 1), 1.0)  # below 25%
         self.assertEqual(word_weight(2, 2), 3.0)  # capped
 
+    def test_shrinkage_needs_evidence_beyond_one_wrong_seed(self):
+        prior = dict(min_error_rate=0.3, prior_rate=0.18, prior_strength=4.0)
+        self.assertEqual(word_weight(2, 1, **prior), 1.0)  # one wrong seed of two
+        self.assertAlmostEqual(word_weight(2, 2, **prior), 1 + 2 * (2 + 0.72) / 6)
+        self.assertEqual(word_weight(20, 4, **prior), 1.0)  # 20%: near the corpus rate
+        self.assertGreater(word_weight(20, 10, **prior), 1.8)
+
 
 class AlignmentTest(unittest.TestCase):
     def test_ctc_alignment_recovers_word_spans(self):

@@ -54,11 +54,17 @@ def matched_words(reference, hypothesis):
     return result
 
 
-def word_weight(trials, errors, *, min_trials=2, min_error_rate=0.25, scale=2.0, cap=3.0):
-    """Loss multiplier for a word from its model-attributable error rate (1.0 = not hard)."""
+def word_weight(trials, errors, *, min_trials=2, min_error_rate=0.25, scale=2.0, cap=3.0,
+                prior_rate=0.0, prior_strength=0.0):
+    """Loss multiplier for a word from its model-attributable error rate (1.0 = not hard).
+
+    With prior_strength > 0 the rate is shrunk toward prior_rate (the corpus-wide error rate) as
+    (errors + strength * prior) / (trials + strength), so a word seen in two trials needs both to
+    fail before it counts, while a word seen in many trials is judged on its own rate.
+    """
     if trials < min_trials or not trials:
         return 1.0
-    rate = errors / trials
+    rate = (errors + prior_strength * prior_rate) / (trials + prior_strength)
     return 1.0 if rate < min_error_rate else min(cap, 1.0 + scale * rate)
 
 
@@ -70,6 +76,7 @@ def score_words(items, **weight_options):
     recording, so Whisper's own mistakes are not blamed on the model.
     """
     stats = {}
+    prior = weight_options.get("prior_strength", 0.0) > 0
     for item in items:
         ref = words(item["reference"])
         real_ok = matched_words(ref, words(item["real"]))
@@ -87,8 +94,10 @@ def score_words(items, **weight_options):
             if len(outcomes) > 1:
                 s["unknown"] += all(not o for o in outcomes)
                 s["unstable"] += any(outcomes) and not all(outcomes)
+    trials = sum(s["trials"] for s in stats.values())
+    corpus_rate = sum(s["errors"] for s in stats.values()) / trials if trials and prior else 0.0
     for s in stats.values():
-        s["weight"] = word_weight(s["trials"], s["errors"], **weight_options)
+        s["weight"] = word_weight(s["trials"], s["errors"], prior_rate=corpus_rate, **weight_options)
     return stats
 
 
