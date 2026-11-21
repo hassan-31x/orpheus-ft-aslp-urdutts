@@ -63,6 +63,17 @@ class AlignmentTest(unittest.TestCase):
         self.assertEqual([tuple(round(x, 2) for x in s) for s in spans], [(0.02, 0.06), (0.1, 0.16)])
         self.assertIsNone(ctc_align(lp[:2], [a, sep, b], blank))
 
+    def test_ctc_alignment_long_text_exceeds_int8_state_index(self):
+        import numpy as np
+        tokens = [1 + i % 3 for i in range(100)]
+        frames_seq = []
+        for k, t in enumerate(tokens):  # one token per two frames, blanks between, so 2*L+1 > 127 states
+            frames_seq += [t, 0]
+        lp = np.full((len(frames_seq), 4), -10.0)
+        lp[np.arange(len(frames_seq)), frames_seq] = 0.0
+        path = ctc_align(lp, tokens, 0)
+        self.assertEqual(sorted(set(path[path >= 0])), list(range(100)))
+
     def test_frame_multipliers_cover_span_with_margin(self):
         m = frame_multipliers([[2 * FRAME_SECONDS + 0.01, 3 * FRAME_SECONDS + 0.01, 2.5]], 8, margin_frames=1)
         self.assertEqual(m, [1.0, 2.5, 2.5, 2.5, 2.5, 1.0, 1.0, 1.0])

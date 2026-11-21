@@ -302,6 +302,7 @@ def align(state, rows, hard, deadline):
     processor = AutoProcessor.from_pretrained(MMS, target_lang=MMS_LANG)
     model = Wav2Vec2ForCTC.from_pretrained(MMS, target_lang=MMS_LANG, ignore_mismatched_sizes=True,
                                            torch_dtype=torch.float16).cuda().eval()
+    model.load_adapter(MMS_LANG)  # the Urdu head: from_pretrained only warns about the 154 -> 127 size change
     tok = processor.tokenizer
     unk, blank, sep = tok.unk_token_id, tok.pad_token_id, tok.convert_tokens_to_ids("|")
     finished = True
@@ -324,7 +325,10 @@ def align(state, rows, hard, deadline):
             signal = resample_poly(signal, 16000 // d, sr // d).astype(np.float32)
             values = processor(signal, sampling_rate=16000, return_tensors="pt").input_values.half().cuda()
             with torch.inference_mode():
-                log_probs = model(values).logits[0].float().log_softmax(-1).cpu().numpy()
+                logits = model(values).logits
+            if logits.shape[-1] != len(tok):
+                raise RuntimeError(f"MMS head has {logits.shape[-1]} outputs, tokenizer {len(tok)}: adapter not loaded")
+            log_probs = logits[0].float().log_softmax(-1).cpu().numpy()
             frames = ctc_align(log_probs, tokens, blank) if tokens else None
             spans = []
             if frames is not None:

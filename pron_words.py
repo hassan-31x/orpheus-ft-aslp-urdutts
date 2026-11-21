@@ -135,7 +135,7 @@ def ctc_align(log_probs, tokens, blank):
     path = np.empty(T, dtype=np.int64)
     for t in range(T - 1, -1, -1):
         path[t] = s
-        s -= back[t, s]
+        s -= int(back[t, s])  # int8 minus a Python int overflows under NumPy 2 once s > 127
     return np.where(path % 2 == 1, (path - 1) // 2, -1)
 
 
