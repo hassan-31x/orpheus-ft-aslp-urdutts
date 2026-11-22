@@ -964,7 +964,7 @@ def train(cfg, ds, tokenizer, splits, run, store, identity, session_start):
     metrics = trainer.evaluate(eval_dataset=ds["validation"], metric_key_prefix="full_validation")
     if cfg.get("mixture") or cfg.get("stage2_dataset"):
         # A combined loss can conceal pronunciation regression in the replay source.
-        for source in ("aslp", "urdutts"):
+        for source in ("aslp", "urdutts", "uat"):
             indices = [i for i, row in enumerate(splits["validation"]) if row.get("source") == source]
             if indices:
                 source_audio = {splits["validation"][i]["audio"] for i in indices}
