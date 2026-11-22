@@ -164,6 +164,52 @@ class SelectV4Test(unittest.TestCase):
         self.assertTrue(all(v["voice"].endswith("| neutral") and "drama" not in v["voice"] for v in voices))
 
 
+class UatWorkerTest(unittest.TestCase):
+    def wav_bytes(self, seconds, rate=48000):
+        try:
+            import io
+            import numpy as np
+            import soundfile as sf
+        except ImportError:
+            self.skipTest("soundfile not installed")
+        buffer = io.BytesIO()
+        wave = (0.1 * np.sin(np.arange(int(seconds * rate)) * 0.05)).astype("float32")
+        sf.write(buffer, np.stack([wave, wave], axis=1), rate, format="WAV", subtype="PCM_16")
+        return buffer.getvalue()
+
+    def test_scorer_startup_race_is_retried_and_short_clips_skip_scoring(self):
+        import tempfile
+        calls = []
+
+        class Scorer:
+            def acoustic(self, path):
+                return dict(GOOD), None
+
+        def flaky(model_dir):
+            calls.append(1)
+            if len(calls) == 1:
+                raise FileNotFoundError("quality_models.json.tmp")  # the concurrent first-use race
+            return Scorer()
+
+        original = s3.b2.scorer
+        s3.b2.scorer = flaky
+        try:
+            with tempfile.TemporaryDirectory() as scratch:
+                row = dict(name="LJ0001.wav", bytes=self.wav_bytes(3.0), text="آپ کیسے ہیں")
+                ok = s3.uat_worker((row, "m", scratch, "shard", 0))
+                short = s3.uat_worker((dict(row, bytes=self.wav_bytes(0.8)), "m", scratch, "shard", 1))
+        finally:
+            s3.b2.scorer = original
+        self.assertFalse(ok.get("error"))
+        self.assertEqual(ok["id"], "uat-lj0001")
+        self.assertAlmostEqual(ok["duration"], 3.0, places=2)
+        self.assertEqual(ok["dnsmos_ovrl"], GOOD["dnsmos_ovrl"])
+        self.assertTrue(ok["flac"])
+        self.assertEqual(len(calls), 2)  # one failed attempt, one success; the short clip never touched the scorer
+        self.assertIsNone(short.get("flac"))
+        self.assertEqual(s3.uat_gate(dict(short, clipped_fraction=0, rms_db=-20), RULES), "duration")
+
+
 class VerifyFinalTest(unittest.TestCase):
     def build(self, root, drop_label=False, rate=24000):
         try:

@@ -112,7 +112,16 @@ def uat_worker(args):
         if not V4["uat_min_seconds"] <= out["duration"] <= V4["uat_max_seconds"]:
             return out  # rejected by duration in select; no need to spend ~1 s of DNSMOS/VAD on it
         out["wav_sha256"] = b2.sha256_bytes(wav.read_bytes())
-        metrics, _ = b2.scorer(model_dir).acoustic(wav)
+        for attempt in range(4):
+            try:
+                metrics, _ = b2.scorer(model_dir).acoustic(wav)
+                break
+            except FileNotFoundError:
+                # Every worker writes quality_models.json through one shared temp name on first use; two workers
+                # starting together can lose the race (seen as 1 error in the first Kaggle smoke run). Retry.
+                if attempt == 3:
+                    raise
+                time.sleep(0.5 * (attempt + 1))
         for k in ("dnsmos_sig", "dnsmos_bak", "dnsmos_ovrl", "vad_fraction", "rms_db", "peak", "clipped_fraction"):
             out[k] = metrics.get(k)
         out["flac"] = b2.to_flac(wav)
