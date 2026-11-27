@@ -8,6 +8,12 @@ Separate stage-2 code and artifacts for the course project. The existing ASLP an
 
 At inspection on 2026-11-08, its latest verified snapshot was **checkpoint-3895**, `paused_for_resume`, epoch **0.7746426351771286**, with a scheduled total of **5029 steps**. This repository deliberately refuses that unfinished snapshot as its stage-2 parent. Finish the original epoch first. The new data mix is a hypothesis to evaluate; a perfect speaking model is not an assured outcome.
 
+## Where things are
+
+- Stage 3 (epochs 6-8, UAT + v4 data, one-run Kaggle notebooks): [`STAGE3_PLAN.md`](STAGE3_PLAN.md), built by `stage3_build.py`.
+- **Stage 4 (emotional Urdu, UrduSER data curation): [`STAGE4_EMOTION_DATA_README.md`](STAGE4_EMOTION_DATA_README.md)**, a hand-off plan with a repo map of the files to reuse.
+- Tests: `python -m unittest discover -s tests`.
+
 ## Finish the preceding UrduTTS epoch
 
 Import **[resume_urdutts_epoch1.ipynb](resume_urdutts_epoch1.ipynb)** into Kaggle. It is configured with:
